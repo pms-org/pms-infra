@@ -2,7 +2,7 @@
 # This will be added to main.tf after EKS is provisioned
 
 module "rds" {
-  source  = "../../modules/rds"
+  source = "../../modules/rds"
 
   cluster_name    = local.cluster_name
   environment     = local.environment
@@ -11,23 +11,23 @@ module "rds" {
 
   # RDS Configuration
   engine_version        = "16.1"
-  instance_class        = "db.t3.medium"  # Dev environment
+  instance_class        = "db.t3.medium" # Dev environment
   allocated_storage     = 50
   max_allocated_storage = 100
 
   # Database settings
   db_name  = "pmsdb"
-  username = "pmsadmin"  # Will be stored in Secrets Manager
+  username = "pmsadmin" # Will be stored in Secrets Manager
 
   # High Availability (disabled for dev, enabled for prod)
-  multi_az               = false
+  multi_az                = false
   backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "sun:04:00-sun:05:00"
 
   # Security
-  deletion_protection = false  # Enable in production!
-  skip_final_snapshot = true   # Disable in production!
+  deletion_protection = false # Enable in production!
+  skip_final_snapshot = true  # Disable in production!
 
   # Allow EKS nodes to connect
   allowed_security_group_ids = [module.eks.node_security_group_id]

@@ -3,11 +3,11 @@
 
 terraform {
   backend "s3" {
-    bucket         = "pms-terraform-state-dev"  # Create this bucket first
+    bucket         = "pms-terraform-state-dev" # Create this bucket first
     key            = "eks/dev/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
-    dynamodb_table = "pms-terraform-locks"      # Create this table first
+    dynamodb_table = "pms-terraform-locks" # Create this table first
   }
 
   required_version = ">= 1.5.0"
@@ -50,7 +50,7 @@ provider "kubernetes" {
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
-    args = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
   }
 }
 
@@ -63,7 +63,7 @@ provider "helm" {
     exec {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
-      args = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
     }
   }
 }
@@ -99,18 +99,18 @@ module "vpc" {
   public_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 48)]
 
   enable_nat_gateway   = true
-  single_nat_gateway   = true  # Dev environment - single NAT for cost savings
+  single_nat_gateway   = true # Dev environment - single NAT for cost savings
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   # Kubernetes tags required for EKS
   public_subnet_tags = {
-    "kubernetes.io/role/elb" = 1
+    "kubernetes.io/role/elb"                      = 1
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = 1
+    "kubernetes.io/role/internal-elb"             = 1
     "kubernetes.io/cluster/${local.cluster_name}" = "shared"
   }
 
@@ -144,7 +144,7 @@ module "eks" {
       most_recent = true
     }
     aws-ebs-csi-driver = {
-      most_recent = true
+      most_recent              = true
       service_account_role_arn = module.ebs_csi_irsa.iam_role_arn
     }
   }
