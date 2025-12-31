@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-capture
+  namespace: pms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: trade-capture
+  template:
+    metadata:
+      labels:
+        app: trade-capture
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+      - name: wait-for-rabbitmq
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z rabbitmq 5552; do echo waiting for rabbitmq stream; sleep 2; done']
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z kafka 19092; do echo waiting for kafka; sleep 2; done']
+      - name: wait-for-schema-registry
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z schema-registry 8081; do echo waiting for schema-registry; sleep 2; done']
+      containers:
+      - name: trade-capture
+        image: niishantdev/pms-trade-capture:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8082
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "docker"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres:5432/pmsdb"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "pms"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "pms"
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_NAME
+          value: "pmsdb"
+        - name: DATASOURCE_USER
+          value: "pms"
+        - name: DATASOURCE_PASS
+          value: "pms"
+        - name: DATASOURCE_HIKARI_POOL_SIZE
+          value: "20"
+        - name: JPA_OPEN_IN_VIEW
+          value: "false"
+        - name: JDBC_BATCH_SIZE
+          value: "500"
+        - name: SPRING_RABBITMQ_USERNAME
+          value: "guest"
+        - name: SPRING_RABBITMQ_PASSWORD
+          value: "guest"
+        - name: APP_RABBIT_STREAM_HOST
+          value: "rabbitmq"
+        - name: APP_RABBIT_STREAM_PORT
+          value: "5552"
+        - name: APP_RABBIT_STREAM_NAME
+          value: "trade-stream"
+        - name: APP_RABBIT_STREAM_CONSUMER_NAME
+          value: "trade-capture-group"
+        - name: APP_RABBIT_STREAM_USERNAME
+          value: "guest"
+        - name: APP_RABBIT_STREAM_PASSWORD
+          value: "guest"
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
+        - name: SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:8081"
+        - name: SPRING_KAFKA_PRODUCER_KEY_SERIALIZER
+          value: "org.apache.kafka.common.serialization.StringSerializer"
+        - name: SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER
+          value: "io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer"
+        - name: SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:8081"
+        - name: SPRING_KAFKA_PRODUCER_PROPERTIES_AUTO_REGISTER_SCHEMAS
+          value: "true"
+        - name: BATCH_SIZE
+          value: "500"
+        - name: BATCH_TIMEOUT_MS
+          value: "100"

@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Namespace
+  - namespace.yaml
+  
+  # Infrastructure Services
+  - infra/postgres/deployment.yaml
+  - infra/postgres/service.yaml
+  
+  - infra/rabbitmq/deployment.yaml
+  - infra/rabbitmq/service.yaml
+  
+  - infra/kafka/deployment.yaml
+  - infra/kafka/service.yaml
+  
+  - infra/schema-registry/deployment.yaml
+  - infra/schema-registry/service.yaml
+  
+  - infra/redis/deployment.yaml
+  - infra/redis/service.yaml
+  
+  # Application Services
+  - apps/simulation/deployment.yaml
+  - apps/simulation/service.yaml
+  
+  - apps/trade-capture/deployment.yaml
+  - apps/trade-capture/service.yaml
+  
+  - apps/validation/deployment.yaml
+  - apps/validation/service.yaml
+
+labels:
+  - pairs:
+      managed-by: kustomize
+      project: pms
+    includeSelectors: false

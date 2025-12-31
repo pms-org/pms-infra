@@ -1,0 +1,30 @@
+# Secrets (NEVER COMMIT)
+**/secrets.env
+*.secret
+*.key
+*.pem
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+
+# Kustomize generated
+kustomization-generated.yaml

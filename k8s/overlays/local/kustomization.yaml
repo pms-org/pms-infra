@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pms
+
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: local
+    includeSelectors: false
+
+# Secret generation from .env file (gitignored)
+secretGenerator:
+  - name: postgres-credentials
+    envs:
+      - secrets.env
+    options:
+      disableNameSuffixHash: true
+  
+  - name: rabbitmq-credentials
+    envs:
+      - secrets.env
+    options:
+      disableNameSuffixHash: true
+  
+  - name: kafka-credentials
+    envs:
+      - secrets.env
+    options:
+      disableNameSuffixHash: true
+
+# ConfigMap for non-sensitive configuration
+configMapGenerator:
+  - name: app-config
+    literals:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:19092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_STREAM_PORT=5552
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    options:
+      disableNameSuffixHash: true

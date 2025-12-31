@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validation-service
+  namespace: pms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validation-service
+  template:
+    metadata:
+      labels:
+        app: validation-service
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+      - name: wait-for-redis
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done']
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z kafka 19092; do echo waiting for kafka; sleep 2; done']
+      - name: wait-for-schema-registry
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z schema-registry 8081; do echo waiting for schema-registry; sleep 2; done']
+      containers:
+      - name: validation-service
+        image: niishantdev/pms-validation:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_APPLICATION_NAME
+          value: "validation"
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "pmsdb"
+        - name: DATASOURCE_USER
+          value: "pms"
+        - name: DATASOURCE_PASS
+          value: "pms"
+        - name: DATASOURCE_DRIVER
+          value: "org.postgresql.Driver"
+        - name: HIBERNATE_DDL_AUTO
+          value: "update"
+        - name: HIBERNATE_SHOW_SQL
+          value: "false"
+        - name: HIBERNATE_FORMAT_SQL
+          value: "true"
+        - name: HIBERNATE_DIALECT
+          value: "org.hibernate.dialect.PostgreSQLDialect"
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_TIMEOUT
+          value: "2s"
+        - name: CACHE_TYPE
+          value: "redis"
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka:9092"
+        - name: KAFKA_CONSUMER_GROUP_ID
+          value: "validation-consumer-group"
+        - name: SCHEMA_REGISTRY_URL
+          value: "http://schema-registry:8081"
+        - name: SERVER_PORT
+          value: "8080"
+        - name: INCOMING_TRADES_TOPIC
+          value: "raw-trades-topic"
+        - name: OUTGOING_VALID_TRADES_TOPIC
+          value: "valid-trades-topic"
+        - name: OUTGOING_INVALID_TRADES_TOPIC
+          value: "invalid-trades-topic"
+        - name: LOGGING_LEVEL
+          value: "DEBUG"
