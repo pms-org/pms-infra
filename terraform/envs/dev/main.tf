@@ -1,15 +1,7 @@
-# Terraform Backend Configuration
-# Store state in S3 with DynamoDB locking
+# Terraform configuration
+# Backend is configured in backend.tf
 
 terraform {
-  backend "s3" {
-    bucket         = "pms-terraform-state-dev" # Create this bucket first
-    key            = "eks/dev/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
-    dynamodb_table = "pms-terraform-locks" # Create this table first
-  }
-
   required_version = ">= 1.5.0"
 
   required_providers {
