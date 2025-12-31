@@ -1,0 +1,126 @@
+# Production environment resource limits (higher than dev)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: kafka
+spec:
+  template:
+    spec:
+      containers:
+      - name: kafka
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: schema-registry
+spec:
+  template:
+    spec:
+      containers:
+      - name: schema-registry
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: rabbitmq
+spec:
+  template:
+    spec:
+      containers:
+      - name: rabbitmq
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: redis
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: simulation
+spec:
+  template:
+    spec:
+      containers:
+      - name: simulation
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: trade-capture
+spec:
+  template:
+    spec:
+      containers:
+      - name: trade-capture
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: validation-service
+spec:
+  template:
+    spec:
+      containers:
+      - name: validation-service
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"

@@ -1,0 +1,94 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pms
+
+# Base resources - BUT we'll exclude PostgreSQL via patches
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: prod
+      managed-by: kustomize
+      project: pms
+    includeSelectors: false
+
+# ConfigMap for non-sensitive configuration
+# NOTE: DB connection details will come from External Secrets (RDS Multi-AZ)
+configMapGenerator:
+  - name: app-config
+    literals:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:19092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_STREAM_PORT=5552
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ENVIRONMENT=prod
+      - LOG_LEVEL=INFO
+    options:
+      disableNameSuffixHash: true
+
+# RabbitMQ and Kafka credentials (will move to External Secrets)
+# TODO PHASE 5: Replace with ExternalSecret references
+secretGenerator:
+  - name: rabbitmq-credentials
+    literals:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=CHANGEME_USE_EXTERNAL_SECRETS
+    options:
+      disableNameSuffixHash: true
+  
+  - name: kafka-credentials
+    literals:
+      - KAFKA_CLUSTER_ID=PROD_CLUSTER_ID_HERE
+    options:
+      disableNameSuffixHash: true
+
+# Patches to REMOVE PostgreSQL deployment and service (using RDS)
+patches:
+  - target:
+      kind: Deployment
+      name: postgres
+    patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: postgres
+  
+  - target:
+      kind: Service
+      name: postgres
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: postgres
+  
+  - target:
+      kind: PersistentVolumeClaim
+      name: postgres-pvc
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: postgres-pvc
+
+# Patches for production-specific configurations
+patchesStrategicMerge:
+  - replica-patch.yaml
+  - resources-patch.yaml
+
+# Images with production tags (use specific versions, not 'latest')
+images:
+  - name: niishantdev/pms-simulation
+    newTag: v1.0.0  # TODO: Use semantic versioning
+  - name: niishantdev/pms-trade-capture
+    newTag: v1.0.0
+  - name: niishantdev/pms-validation
+    newTag: v1.0.0

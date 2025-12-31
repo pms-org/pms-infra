@@ -1,0 +1,56 @@
+# Production environment replica configuration (multi-replica for HA)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: simulation
+spec:
+  replicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: trade-capture
+spec:
+  replicas: 3  # Critical service - more replicas
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: validation-service
+spec:
+  replicas: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: kafka
+spec:
+  replicas: 3  # Kafka cluster (will move to MSK later)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: rabbitmq
+spec:
+  replicas: 1  # RabbitMQ clustering requires special setup
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: redis
+spec:
+  replicas: 1  # Will move to ElastiCache later
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pms
+  name: schema-registry
+spec:
+  replicas: 2

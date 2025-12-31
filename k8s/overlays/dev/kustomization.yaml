@@ -1,0 +1,92 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pms
+
+# Base resources - BUT we'll exclude PostgreSQL via patches
+resources:
+  - ../../base
+
+labels:
+  - pairs:
+      environment: dev
+      managed-by: kustomize
+      project: pms
+    includeSelectors: false
+
+# ConfigMap for non-sensitive configuration
+# NOTE: DB connection details will come from External Secrets (RDS)
+configMapGenerator:
+  - name: app-config
+    literals:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:19092
+      - SCHEMA_REGISTRY_URL=http://schema-registry:8081
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_STREAM_PORT=5552
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ENVIRONMENT=dev
+    options:
+      disableNameSuffixHash: true
+
+# RabbitMQ and Kafka credentials (temporary - will move to External Secrets)
+secretGenerator:
+  - name: rabbitmq-credentials
+    literals:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    options:
+      disableNameSuffixHash: true
+  
+  - name: kafka-credentials
+    literals:
+      - KAFKA_CLUSTER_ID=dOFfvAcdQZKE60Enfcsefg
+    options:
+      disableNameSuffixHash: true
+
+# Patches to REMOVE PostgreSQL deployment and service
+patches:
+  - target:
+      kind: Deployment
+      name: postgres
+    patch: |-
+      $patch: delete
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: postgres
+  
+  - target:
+      kind: Service
+      name: postgres
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: postgres
+  
+  - target:
+      kind: PersistentVolumeClaim
+      name: postgres-pvc
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: postgres-pvc
+
+# Patches for dev-specific configurations
+patchesStrategicMerge:
+  - replica-patch.yaml
+  - resources-patch.yaml
+
+# Images with dev tags
+images:
+  - name: niishantdev/pms-simulation
+    newTag: dev-latest
+  - name: niishantdev/pms-trade-capture
+    newTag: dev-latest
+  - name: niishantdev/pms-validation
+    newTag: dev-latest
