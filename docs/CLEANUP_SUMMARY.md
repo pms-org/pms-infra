@@ -177,6 +177,63 @@ Based on Terraform state, these AWS resources were partially created:
 
 ---
 
+## Automated Cleanup Script
+
+**⚠️ AWS SSO credentials expired during manual cleanup.**
+
+A comprehensive cleanup script has been created to remove all remaining resources:
+
+**Location:** `scripts/cleanup-remaining-resources.sh`
+
+### To Complete Cleanup:
+
+1. **Re-authenticate with AWS:**
+   ```bash
+   aws sso login
+   ```
+
+2. **Run the cleanup script:**
+   ```bash
+   cd /mnt/c/Developer/pms-new/pms-infra
+   ./scripts/cleanup-remaining-resources.sh
+   ```
+
+### What the Script Cleans Up:
+
+✅ **VPC Resources:**
+- VPC (vpc-0d97a2c15dcc19415)
+- Subnets (all 6)
+- NAT Gateways
+- Internet Gateways
+- Route Tables
+- Security Groups
+- Elastic IPs
+
+✅ **IAM Resources:**
+- IAM Roles with "pms-dev" prefix
+- Attached and inline policies
+- Custom IAM policies
+
+✅ **Other AWS Resources:**
+- KMS Keys (scheduled deletion)
+- Secrets Manager secrets
+- CloudWatch Log Groups
+- S3 Terraform state bucket
+- DynamoDB state lock table
+
+### Remaining Resources Identified:
+
+Based on final check before credentials expired:
+- **VPC:** vpc-0d97a2c15dcc19415 (still exists)
+- **Subnets:** 6 subnets (likely still attached)
+- **Security Groups:** Unknown count
+- **IAM Roles:** Multiple with "pms-dev" prefix
+- **S3 Bucket:** pms-terraform-state-dev-209332675115
+
+**Estimated cleanup time:** 3-5 minutes (automated script)
+
+---
+
 ## Next Steps
 
 ### For Future Deployment:
