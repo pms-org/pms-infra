@@ -71,6 +71,36 @@ terraform output kubeconfig > ~/.kube/config-pms-dev
 - Enable state locking
 - Separate state per environment
 
+IMPORTANT: After making provider/module upgrades, refresh provider lock and reinitialize:
+
+```bash
+terraform init -upgrade -reconfigure
+terraform validate
+terraform plan
+```
+
+If you see provider or module drift, run the command above to update `.terraform.lock.hcl` and reconfigure backends.
+
+Recovery steps if an apply failed partially
+
+```bash
+# Reconfigure providers and backend (safe first step)
+terraform init -reconfigure
+
+# Validate the configuration
+terraform validate
+
+# Plan and inspect
+terraform plan
+
+# If partial resources exist, list state and remove problematic items before retrying
+terraform state list
+terraform state rm <resource>
+
+# Re-run apply after cleanup
+terraform apply
+```
+
 ## Next Steps
 
 1. Design module architecture

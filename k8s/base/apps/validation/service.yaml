@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: validation-service
   namespace: pms
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8080"
 spec:
   selector:
     app: validation-service

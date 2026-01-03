@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trade-capture-prod
+  namespace: argocd
+spec:
+  project: pms-project
+  source:
+    repoURL: 'https://github.com/pms-org/pms-infra'
+    targetRevision: HEAD
+    path: services/trade-capture/overlays/prod
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: pms-prod
+  # No automated sync: prod is managed manually in Argo CD
+  syncPolicy: {}

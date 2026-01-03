@@ -53,6 +53,8 @@ resource "aws_secretsmanager_secret_version" "rds_credentials" {
     username = module.rds.db_instance_username
     password = module.rds.db_instance_password
   })
+  # Ensure RDS is created before we attempt to store credentials
+  depends_on = [module.rds]
 }
 
 # RDS Outputs

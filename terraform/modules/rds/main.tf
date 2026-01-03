@@ -57,6 +57,17 @@ variable "username" {
   default     = "pmsadmin"
 }
 
+variable "db_password" {
+  description = "Optional master password. If not set, a random password is generated. Must be at least 12 chars if provided."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.db_password == "" || length(var.db_password) >= 12
+    error_message = "Database password must be empty (to auto-generate) or at least 12 characters."
+  }
+}
+
 variable "multi_az" {
   description = "Enable Multi-AZ deployment"
   type        = bool
@@ -165,7 +176,7 @@ resource "aws_db_instance" "this" {
   # Database
   db_name  = var.db_name
   username = var.username
-  password = random_password.master_password.result
+  password = var.db_password != "" ? var.db_password : random_password.master_password.result
 
   # Network
   db_subnet_group_name   = aws_db_subnet_group.this.name

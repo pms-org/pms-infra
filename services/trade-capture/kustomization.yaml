@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../k8s/base/apps/trade-capture
+
+# Image tag is the single source of truth for this service. GitHub Actions should update
+# the `images` section below (only `newTag`) and commit this file back to this repository.
+images:
+  - name: niishantdev/pms-trade-capture
+    newTag: "REPLACE_WITH_IMAGE_SHA"

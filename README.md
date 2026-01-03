@@ -1,3 +1,73 @@
+# pms-infra — Infrastructure (GitOps)
+
+This repository is the single source of truth for Kubernetes manifests and Argo CD Applications for PMS.
+
+Key principles
+- Argo CD is the only deployment mechanism. No kubectl in CI.
+- Image tags are immutable (use Git SHAs).
+- No secrets in Git; use External Secrets Operator or AWS Secrets Manager (IRSA recommended).
+
+Repository layout (mandatory)
+
+```
+pms-infra/
+├── argocd/                # Argo CD install, Application manifests, Projects
+├── services/              # Per-service kustomize bases + overlays
+├── monitoring/            # Prometheus + Grafana manifests
+├── environments/          # Optional environment-level collections
+└── README.md
+```
+
+How deployments work (summary)
+1. App CI builds an immutable image and updates `services/<service>/kustomization.yaml` (images.newTag).
+2. CI commits that single-file change to `pms-infra`.
+3. Argo CD detects the change and applies the new manifest to the target namespace.
+
+CI contract (what to modify)
+- File: `services/<service>/kustomization.yaml` — change only the `images` newTag field.
+
+Example GitHub Actions step (illustrative)
+
+```yaml
+- name: Update infra with new image
+  run: |
+    git clone https://github.com/pms-org/pms-infra infra
+    cd infra/services/my-service
+    # update kustomization images.newTag using a small script or yq
+    yq e '.images[0].newTag = "${{ steps.build.outputs.image_sha }}"' -i kustomization.yaml
+    git add kustomization.yaml
+    git commit -m "chore(my-service): bump image to ${{ steps.build.outputs.image_sha }}"
+    git push
+```
+
+Notes: The workflow above needs only Git credentials and repo push access — no kubectl or cluster access.
+
+Environments
+- Use namespaces: `pms-dev`, `pms-stage`, `pms-prod`.
+- Per-service overlays are under `services/<service>/overlays/{dev,stage,prod}` and set namespace/replicas.
+
+Monitoring
+- Deploy Prometheus + Grafana to namespace `monitoring`. Prometheus scrapes services annotated with
+  `prometheus.io/scrape: "true"` and `prometheus.io/path: "/actuator/prometheus"`.
+
+Promotion and rollback
+- Promote by merging commits (dev → stage → prod). Rollback by reverting the deployment commit in Git.
+
+Security & best practices
+- Do not put secrets in Git. Use External Secrets Operator or AWS Secrets Manager and IRSA.
+- Argo CD should be the only system allowed to change cluster resources.
+
+See `argocd/`, `services/` and `monitoring/` for example manifests and usage notes.
+
+Example CI -> infra integration
+- See the example GitHub Actions workflow in the `pms-trade-capture` repository: `.github/workflows/build-and-update-infra.yml`. It demonstrates building an immutable image tag and updating `services/trade-capture/kustomization.yaml` in this repo.
+
+How to add a new service (summary)
+1. Add Kubernetes base manifests under `k8s/base/apps/<service>` (Deployment + Service). Do NOT put secrets in YAML.
+2. Add `services/<service>/kustomization.yaml` that references the base and defines the `images` entry.
+3. Add overlays `services/<service>/overlays/{dev,stage,prod}` to set namespace/replicas.
+4. Add Argo CD Applications in `argocd/applications/` (one per environment) pointing to the appropriate overlay path.
+
 # PMS DevOps Repository# PMS Infrastructure - Simple Kubernetes Setup
 
 

@@ -40,7 +40,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1"
     command     = "aws"
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
   }
@@ -53,7 +53,7 @@ provider "helm" {
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
     exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
+      api_version = "client.authentication.k8s.io/v1"
       command     = "aws"
       args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
     }
@@ -111,8 +111,9 @@ module "vpc" {
 
 # EKS Module
 module "eks" {
-  source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.0"
+  source = "terraform-aws-modules/eks/aws"
+  # Upgrade to v20.x to get better compatibility with EKS 1.28 and IRSA features
+  version = "~> 20.8"
 
   cluster_name    = local.cluster_name
   cluster_version = "1.28"
@@ -144,8 +145,9 @@ module "eks" {
   # Managed node group
   eks_managed_node_groups = {
     general = {
-      name           = "${local.cluster_name}-node-group"
-      instance_types = ["t3.large"]
+      name = "${local.cluster_name}-node-group"
+      # Prefer t3.large, allow t3a.large as a fallback for availability
+      instance_types = ["t3.large", "t3a.large"]
 
       min_size     = 2
       max_size     = 6
@@ -196,6 +198,13 @@ module "eks" {
   tags = local.tags
 }
 
+# Wait gate to ensure EKS is fully created before relying on Kubernetes provider
+resource "null_resource" "wait_for_eks" {
+  # depends on the eks module finishing
+  # Ensure EKS control plane is fully available before installing chart
+  depends_on = [module.eks, null_resource.wait_for_eks]
+}
+
 # IAM role for EBS CSI Driver
 module "ebs_csi_irsa" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
@@ -230,6 +239,49 @@ module "lb_controller_irsa" {
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
     }
   }
+
+  tags = local.tags
+}
+
+# IAM role for External Secrets Operator
+module "external_secrets_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "~> 5.0"
+
+  role_name = "${local.cluster_name}-external-secrets"
+
+  role_policy_arns = {
+    policy = aws_iam_policy.external_secrets.arn
+  }
+
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["pms:external-secrets-sa"]
+    }
+  }
+
+  tags = local.tags
+}
+
+# IAM policy for External Secrets to access Secrets Manager
+resource "aws_iam_policy" "external_secrets" {
+  name        = "${local.cluster_name}-external-secrets-policy"
+  description = "Policy for External Secrets Operator to read from Secrets Manager"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:pms/${local.environment}/*"
+      }
+    ]
+  })
 
   tags = local.tags
 }
@@ -310,4 +362,15 @@ output "public_subnets" {
 output "update_kubeconfig_command" {
   description = "Command to update kubeconfig"
   value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
+}
+
+# External Secrets IAM role ARN (for ServiceAccount annotation)
+output "external_secrets_role_arn" {
+  description = "ARN of IAM role for External Secrets Operator"
+  value       = module.external_secrets_irsa.iam_role_arn
+}
+
+output "aws_account_id" {
+  description = "AWS Account ID"
+  value       = data.aws_caller_identity.current.account_id
 }

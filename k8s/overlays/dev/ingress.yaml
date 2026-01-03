@@ -1,0 +1,33 @@
+# Ingress for Trade Capture Service
+# Uses AWS Load Balancer Controller to provision ALB
+#
+# WHY: Expose trade-capture service to external traffic via AWS ALB
+# ONLY for dev/prod overlays, not local
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: trade-capture-ingress
+  namespace: pms
+  annotations:
+    # AWS Load Balancer Controller annotations
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: trade-capture
+                port:
+                  number: 8082

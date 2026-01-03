@@ -6,6 +6,11 @@ namespace: pms
 # Base resources - BUT we'll exclude PostgreSQL via patches
 resources:
   - ../../base
+  # AWS-specific resources for EKS
+  - ../../base/aws-addons/secret-store.yaml
+  - ../../base/aws-addons/service-account.yaml
+  - external-secret-rds.yaml  # RDS credentials from Secrets Manager
+  - ingress.yaml              # ALB Ingress for trade-capture
 
 labels:
   - pairs:
