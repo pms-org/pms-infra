@@ -5,6 +5,9 @@ kind: Kustomization
 resources:
   - ../../base
 
+# Transform all resources to use pms-dev namespace
+namespace: pms-dev
+
 labels:
   - pairs:
       environment: dev
