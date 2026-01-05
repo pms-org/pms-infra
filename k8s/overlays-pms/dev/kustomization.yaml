@@ -19,36 +19,36 @@ labels:
 patches:
   - patch: |-
       - op: replace
-        path: /spec/template/spec/volumes/0
+        path: /spec/template/spec/volumes
         value:
-          name: pgdata
+        - name: pgdata
           emptyDir: {}
     target:
       kind: Deployment
       name: postgres
   - patch: |-
       - op: replace
-        path: /spec/template/spec/volumes/0
+        path: /spec/template/spec/volumes
         value:
-          name: rabbitmq-data
+        - name: rabbitmq-data
           emptyDir: {}
     target:
       kind: Deployment
       name: rabbitmq
   - patch: |-
       - op: replace
-        path: /spec/template/spec/volumes/0
+        path: /spec/template/spec/volumes
         value:
-          name: redis-data
+        - name: redis-data
           emptyDir: {}
     target:
       kind: Deployment
       name: redis
   - patch: |-
       - op: replace
-        path: /spec/template/spec/volumes/0
+        path: /spec/template/spec/volumes
         value:
-          name: kafka-data
+        - name: kafka-data
           emptyDir: {}
     target:
       kind: Deployment
