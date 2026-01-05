@@ -13,15 +13,15 @@ command -v kubectl >/dev/null 2>&1 || { echo "❌ kubectl not found"; exit 1; }
 command -v kustomize >/dev/null 2>&1 || echo "⚠️  kustomize not found, using kubectl kustomize"
 
 # Check if secrets file exists
-if [ ! -f "k8s/overlays/local/secrets.env" ]; then
+if [ ! -f "k8s/overlays-pms/local/secrets.env" ]; then
     echo "❌ secrets.env not found"
-    echo "📝 Copy from example: cp secrets/examples/secrets.env.example k8s/overlays/local/secrets.env"
+    echo "📝 Copy from example: cp secrets/examples/secrets.env.example k8s/overlays-pms/local/secrets.env"
     exit 1
 fi
 
 # Apply manifests
 echo "📦 Applying Kubernetes manifests..."
-kubectl apply -k k8s/overlays/local
+kubectl apply -k k8s/overlays-pms/local
 
 # Wait for infrastructure
 echo "⏳ Waiting for infrastructure pods..."

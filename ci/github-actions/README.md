@@ -19,7 +19,7 @@ This directory will contain GitHub Actions workflow definitions for CI/CD automa
 
 **Jobs:**
 - Build and push Docker images
-- Update image tags in k8s/overlays/dev
+- Update image tags in k8s/overlays-pms/dev
 - Apply to dev cluster
 - Run smoke tests
 
@@ -28,7 +28,7 @@ This directory will contain GitHub Actions workflow definitions for CI/CD automa
 
 **Jobs:**
 - Promote images from dev
-- Update image tags in k8s/overlays/prod
+- Update image tags in k8s/overlays-pms/prod
 - Apply to prod cluster (blue-green deployment)
 - Run integration tests
 - Notify team
@@ -53,7 +53,7 @@ jobs:
         
       - name: Apply manifests
         run: |
-          kubectl apply -k k8s/overlays/dev
+          kubectl apply -k k8s/overlays-pms/dev
 ```
 
 ## Secrets Required

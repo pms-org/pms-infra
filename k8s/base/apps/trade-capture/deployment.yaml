@@ -5,6 +5,11 @@ metadata:
   namespace: pms
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: trade-capture
@@ -32,15 +37,16 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8082
+        envFrom:
+        - secretRef:
+            name: postgres-credentials
+        - secretRef:
+            name: rabbitmq-credentials
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "docker"
         - name: SPRING_DATASOURCE_URL
           value: "jdbc:postgresql://postgres:5432/pmsdb"
-        - name: SPRING_DATASOURCE_USERNAME
-          value: "pms"
-        - name: SPRING_DATASOURCE_PASSWORD
-          value: "pms"
         - name: SPRING_RABBITMQ_HOST
           value: "rabbitmq"
         - name: SPRING_RABBITMQ_PORT
@@ -49,20 +55,12 @@ spec:
           value: "postgres"
         - name: DB_NAME
           value: "pmsdb"
-        - name: DATASOURCE_USER
-          value: "pms"
-        - name: DATASOURCE_PASS
-          value: "pms"
         - name: DATASOURCE_HIKARI_POOL_SIZE
           value: "20"
         - name: JPA_OPEN_IN_VIEW
           value: "false"
         - name: JDBC_BATCH_SIZE
           value: "500"
-        - name: SPRING_RABBITMQ_USERNAME
-          value: "guest"
-        - name: SPRING_RABBITMQ_PASSWORD
-          value: "guest"
         - name: APP_RABBIT_STREAM_HOST
           value: "rabbitmq"
         - name: APP_RABBIT_STREAM_PORT
@@ -71,10 +69,6 @@ spec:
           value: "trade-stream"
         - name: APP_RABBIT_STREAM_CONSUMER_NAME
           value: "trade-capture-group"
-        - name: APP_RABBIT_STREAM_USERNAME
-          value: "guest"
-        - name: APP_RABBIT_STREAM_PASSWORD
-          value: "guest"
         - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
           value: "kafka:9092"
         - name: KAFKA_BOOTSTRAP_SERVERS
@@ -93,3 +87,22 @@ spec:
           value: "500"
         - name: BATCH_TIMEOUT_MS
           value: "100"
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8082
+          initialDelaySeconds: 30
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8082
+          initialDelaySeconds: 60
+          periodSeconds: 10

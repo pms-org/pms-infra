@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/pms-org/pms-infra'
     targetRevision: HEAD
-    path: services/trade-capture/overlays/prod
+    path: k8s/overlays-pms/prod
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: pms-prod

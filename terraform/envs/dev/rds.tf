@@ -1,70 +1,88 @@
-# RDS PostgreSQL for PMS (Dev Environment)
-# This will be added to main.tf after EKS is provisioned
+# Random password for RDS
+resource "random_password" "rds_password" {
+  length  = 32
+  special = true
+}
 
+# Store RDS credentials in Secrets Manager
+resource "aws_secretsmanager_secret" "rds" {
+  name = "pms/${var.environment}/postgres"
+}
+
+resource "aws_secretsmanager_secret_version" "rds" {
+  secret_id = aws_secretsmanager_secret.rds.id
+  secret_string = jsonencode({
+    username = "pmsadmin"
+    password = random_password.rds_password.result
+    engine   = "postgres"
+    host     = module.rds.db_instance_address
+    port     = 5432
+    dbname   = "pmsdb"
+  })
+}
+
+# Security group for RDS
+resource "aws_security_group" "rds" {
+  name_prefix = "${local.cluster_name}-rds-"
+  vpc_id      = module.vpc.vpc_id
+  description = "Security group for RDS PostgreSQL"
+
+  ingress {
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [module.eks.node_security_group_id]
+    description     = "Allow PostgreSQL from EKS nodes"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound"
+  }
+
+  tags = {
+    Name = "${local.cluster_name}-rds"
+  }
+}
+
+# RDS PostgreSQL instance
 module "rds" {
-  source = "../../modules/rds"
+  source  = "terraform-aws-modules/rds/aws"
+  version = "~> 6.0"
 
-  cluster_name    = local.cluster_name
-  environment     = local.environment
-  vpc_id          = module.vpc.vpc_id
-  private_subnets = module.vpc.private_subnets
+  identifier = "${local.cluster_name}-postgres"
 
-  # RDS Configuration
-  engine_version        = "16.1"
-  instance_class        = "db.t3.medium" # Dev environment
-  allocated_storage     = 50
+  engine               = "postgres"
+  engine_version       = "15.4"
+  family               = "postgres15"
+  major_engine_version = "15"
+  instance_class       = "db.t3.micro"
+
+  allocated_storage     = 20
   max_allocated_storage = 100
 
-  # Database settings
   db_name  = "pmsdb"
-  username = "pmsadmin" # Will be stored in Secrets Manager
+  username = "pmsadmin"
+  port     = 5432
 
-  # High Availability (disabled for dev, enabled for prod)
+  manage_master_user_password = false
+  password                    = random_password.rds_password.result
+
+  vpc_security_group_ids = [aws_security_group.rds.id]
+  db_subnet_group_name   = module.vpc.database_subnet_group_name
+
   multi_az                = false
+  publicly_accessible     = false
   backup_retention_period = 7
-  backup_window           = "03:00-04:00"
-  maintenance_window      = "sun:04:00-sun:05:00"
+  skip_final_snapshot     = true
+  deletion_protection     = false
 
-  # Security
-  deletion_protection = false # Enable in production!
-  skip_final_snapshot = true  # Disable in production!
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
-  # Allow EKS nodes to connect
-  allowed_security_group_ids = [module.eks.node_security_group_id]
-
-  tags = local.tags
-}
-
-# Store RDS credentials in AWS Secrets Manager
-resource "aws_secretsmanager_secret" "rds_credentials" {
-  name        = "pms/dev/postgres"
-  description = "RDS PostgreSQL credentials for PMS dev environment"
-
-  tags = local.tags
-}
-
-resource "aws_secretsmanager_secret_version" "rds_credentials" {
-  secret_id = aws_secretsmanager_secret.rds_credentials.id
-
-  secret_string = jsonencode({
-    host     = module.rds.db_instance_endpoint
-    port     = module.rds.db_instance_port
-    dbname   = module.rds.db_instance_name
-    username = module.rds.db_instance_username
-    password = module.rds.db_instance_password
-  })
-  # Ensure RDS is created before we attempt to store credentials
-  depends_on = [module.rds]
-}
-
-# RDS Outputs
-output "rds_endpoint" {
-  description = "RDS instance endpoint"
-  value       = module.rds.db_instance_endpoint
-  sensitive   = true
-}
-
-output "rds_secrets_manager_arn" {
-  description = "ARN of the Secrets Manager secret containing RDS credentials"
-  value       = aws_secretsmanager_secret.rds_credentials.arn
+  tags = {
+    Name = "${local.cluster_name}-postgres"
+  }
 }
