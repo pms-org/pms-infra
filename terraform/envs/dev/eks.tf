@@ -13,10 +13,12 @@ module "eks" {
 
   eks_managed_node_groups = {
     general = {
+      ami_type       = "AL2_x86_64"
       instance_types = var.node_instance_types
       desired_size   = var.node_desired_size
       min_size       = var.node_min_size
       max_size       = var.node_max_size
+      version        = "1.28"
     }
   }
 

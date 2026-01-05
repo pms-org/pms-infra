@@ -56,9 +56,9 @@ module "rds" {
   identifier = "${local.cluster_name}-postgres"
 
   engine               = "postgres"
-  engine_version       = "15.4"
-  family               = "postgres15"
-  major_engine_version = "15"
+  engine_version       = "13.16"
+  family               = "postgres13"
+  major_engine_version = "13"
   instance_class       = "db.t3.micro"
 
   allocated_storage     = 20

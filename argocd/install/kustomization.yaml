@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
   # Use the official Argo CD install manifest as the source of truth
   - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+namespace: argocd

@@ -3,8 +3,8 @@ kind: AppProject
 metadata:
   name: pms-project
   namespace: argocd
-labels:
-  owner: platform
+  labels:
+    owner: platform
 spec:
   description: >-
     Argo CD project for PMS applications. Restricts deployments to pms-* namespaces and
@@ -20,5 +20,7 @@ spec:
     server: 'https://kubernetes.default.svc'
   - namespace: monitoring
     server: 'https://kubernetes.default.svc'
-  # Do not allow cluster-scoped resources from apps in this project
-  clusterResourceWhitelist: []
+  # Allow namespace creation
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
