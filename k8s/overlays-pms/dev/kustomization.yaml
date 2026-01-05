@@ -15,6 +15,45 @@ labels:
       project: pms
     includeSelectors: false
 
+# Patches to use emptyDir volumes instead of PVCs for dev environment
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes/0
+        value:
+          name: pgdata
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: postgres
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes/0
+        value:
+          name: rabbitmq-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: rabbitmq
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes/0
+        value:
+          name: redis-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: redis
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes/0
+        value:
+          name: kafka-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: kafka
+
 # ConfigMap for non-sensitive configuration
 # NOTE: DB connection details will come from External Secrets (RDS)
 configMapGenerator:
