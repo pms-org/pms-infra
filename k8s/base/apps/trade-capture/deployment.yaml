@@ -38,55 +38,10 @@ spec:
         ports:
         - containerPort: 8082
         envFrom:
+        - configMapRef:
+            name: trade-capture-config
         - secretRef:
-            name: postgres-credentials
-        - secretRef:
-            name: rabbitmq-credentials
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: "docker"
-        - name: SPRING_DATASOURCE_URL
-          value: "jdbc:postgresql://postgres:5432/pmsdb"
-        - name: SPRING_RABBITMQ_HOST
-          value: "rabbitmq"
-        - name: SPRING_RABBITMQ_PORT
-          value: "5672"
-        - name: DB_HOST
-          value: "postgres"
-        - name: DB_NAME
-          value: "pmsdb"
-        - name: DATASOURCE_HIKARI_POOL_SIZE
-          value: "20"
-        - name: JPA_OPEN_IN_VIEW
-          value: "false"
-        - name: JDBC_BATCH_SIZE
-          value: "500"
-        - name: APP_RABBIT_STREAM_HOST
-          value: "rabbitmq"
-        - name: APP_RABBIT_STREAM_PORT
-          value: "5552"
-        - name: APP_RABBIT_STREAM_NAME
-          value: "trade-stream"
-        - name: APP_RABBIT_STREAM_CONSUMER_NAME
-          value: "trade-capture-group"
-        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-          value: "kafka:9092"
-        - name: KAFKA_BOOTSTRAP_SERVERS
-          value: "kafka:9092"
-        - name: SCHEMA_REGISTRY_URL
-          value: "http://schema-registry:8081"
-        - name: SPRING_KAFKA_PRODUCER_KEY_SERIALIZER
-          value: "org.apache.kafka.common.serialization.StringSerializer"
-        - name: SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER
-          value: "io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer"
-        - name: SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL
-          value: "http://schema-registry:8081"
-        - name: SPRING_KAFKA_PRODUCER_PROPERTIES_AUTO_REGISTER_SCHEMAS
-          value: "true"
-        - name: BATCH_SIZE
-          value: "500"
-        - name: BATCH_TIMEOUT_MS
-          value: "100"
+            name: trade-capture-secrets
         resources:
           requests:
             cpu: "250m"

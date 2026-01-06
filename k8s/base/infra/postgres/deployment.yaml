@@ -18,13 +18,9 @@ spec:
         image: postgres:16
         ports:
         - containerPort: 5432
-        env:
-        - name: POSTGRES_USER
-          value: "pms"
-        - name: POSTGRES_PASSWORD
-          value: "pms"
-        - name: POSTGRES_DB
-          value: "pmsdb"
+        envFrom:
+        - secretRef:
+            name: postgres-secrets
         volumeMounts:
         - name: pgdata
           mountPath: /var/lib/postgresql/data

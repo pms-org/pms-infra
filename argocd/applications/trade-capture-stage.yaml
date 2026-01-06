@@ -1,17 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: trade-capture-stage
+  name: pms-stage
   namespace: argocd
+  labels:
+    environment: stage
 spec:
   project: pms-project
   source:
     repoURL: 'https://github.com/pms-org/pms-infra'
     targetRevision: HEAD
-    path: k8s/overlays-pms/dev
+    path: k8s/overlays/dev  # Using dev overlay for stage (create stage overlay if needed)
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: pms-stage
+    namespace: pms
   syncPolicy:
     automated:
       prune: true

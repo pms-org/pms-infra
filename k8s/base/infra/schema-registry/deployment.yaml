@@ -28,10 +28,6 @@ spec:
             /etc/confluent/docker/run
         ports:
         - containerPort: 8081
-        env:
-        - name: SCHEMA_REGISTRY_HOST_NAME
-          value: "schema-registry"
-        - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
-          value: "PLAINTEXT://kafka:19092"
-        - name: SCHEMA_REGISTRY_LISTENERS
-          value: "http://0.0.0.0:8081"
+        envFrom:
+        - configMapRef:
+            name: schema-registry-config

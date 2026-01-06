@@ -11,7 +11,10 @@ spec:
     the pms-infra repository.
   sourceRepos:
   - 'https://github.com/pms-org/pms-infra'
+  - '*'  # Allow all repos for testing (restrict in production)
   destinations:
+  - namespace: pms
+    server: 'https://kubernetes.default.svc'
   - namespace: pms-dev
     server: 'https://kubernetes.default.svc'
   - namespace: pms-stage

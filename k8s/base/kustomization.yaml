@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - namespace.yaml
   # Infrastructure Services
   - infra/postgres/deployment.yaml
   - infra/postgres/service.yaml
@@ -27,6 +28,10 @@ resources:
   
   - apps/validation/deployment.yaml
   - apps/validation/service.yaml
+
+  # AWS Addons
+  - aws-addons/secret-store.yaml
+  - aws-addons/service-account.yaml
 
 labels:
   - pairs:
