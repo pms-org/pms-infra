@@ -1,0 +1,60 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pms
+
+# Dev environment for kind testing: includes both applications and platform infrastructure
+resources:
+  - ../../platform
+  - ../../apps
+
+labels:
+  - pairs:
+      environment: dev
+      managed-by: kustomize
+    includeSelectors: false
+
+# Patches to use emptyDir volumes instead of PVCs for dev environment
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: pgdata
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: postgres
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: rabbitmq-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: rabbitmq
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: redis-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: redis
+
+# Test secrets for kind deployment (not using External Secrets)
+secretGenerator:
+  - name: trade-capture-database
+    literals:
+      - SPRING_DATASOURCE_USERNAME=pms
+      - SPRING_DATASOURCE_PASSWORD=pms
+      - DATASOURCE_USER=pms
+      - DATASOURCE_PASS=pms
+  - name: trade-capture-rabbitmq
+    literals:
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=admin
+      - APP_RABBIT_STREAM_USERNAME=admin
+      - APP_RABBIT_STREAM_PASSWORD=admin

@@ -1,0 +1,52 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pms
+
+# Dev environment: includes both applications and platform infrastructure
+resources:
+  - ../../platform
+  - ../../apps
+
+# AWS addons for dev (External Secrets Operator)
+  - aws-addons/secret-store.yaml
+  - aws-addons/service-account.yaml
+
+# Dev-specific external secrets
+  - external-secrets.yaml
+
+labels:
+  - pairs:
+      environment: dev
+      managed-by: kustomize
+    includeSelectors: false
+
+# Patches to use emptyDir volumes instead of PVCs for dev environment
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: pgdata
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: postgres
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: rabbitmq-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: rabbitmq
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: redis-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: redis

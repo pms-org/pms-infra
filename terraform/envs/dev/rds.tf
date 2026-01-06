@@ -6,7 +6,7 @@ resource "random_password" "rds_password" {
 
 # Store RDS credentials in Secrets Manager
 resource "aws_secretsmanager_secret" "rds" {
-  name = "pms/${var.environment}/postgres"
+  name = "pms/${var.environment}/postgres-${random_password.rds_password.id}"
 }
 
 resource "aws_secretsmanager_secret_version" "rds" {
@@ -56,9 +56,9 @@ module "rds" {
   identifier = "${local.cluster_name}-postgres"
 
   engine               = "postgres"
-  engine_version       = "13.16"
-  family               = "postgres13"
-  major_engine_version = "13"
+  engine_version       = "16"
+  family               = "postgres16"
+  major_engine_version = "16"
   instance_class       = "db.t3.micro"
 
   allocated_storage     = 20

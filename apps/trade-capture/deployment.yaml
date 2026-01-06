@@ -39,9 +39,9 @@ spec:
         - containerPort: 8082
         envFrom:
         - secretRef:
-            name: postgres-credentials
+            name: trade-capture-database
         - secretRef:
-            name: rabbitmq-credentials
+            name: trade-capture-rabbitmq
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: "docker"

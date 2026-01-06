@@ -1,5 +1,7 @@
 # Secrets (NEVER COMMIT)
 **/secrets.env
+**/.env
+!**/.env.example
 *.secret
 *.key
 *.pem

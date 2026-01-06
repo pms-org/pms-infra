@@ -5,8 +5,8 @@ kind: Kustomization
 resources:
   - ../../base
 
-# Transform all resources to use pms-dev namespace
-namespace: pms-dev
+# Transform all resources to use pms namespace for local dev
+namespace: pms
 
 labels:
   - pairs:
@@ -55,7 +55,6 @@ patches:
       name: kafka
 
 # ConfigMap for non-sensitive configuration
-# NOTE: DB connection details will come from External Secrets (RDS)
 configMapGenerator:
   - name: app-config
     literals:
@@ -70,26 +69,31 @@ configMapGenerator:
     options:
       disableNameSuffixHash: true
 
-# RabbitMQ and Kafka credentials (temporary - will move to External Secrets)
+# Secret generation from .env file (gitignored)
 secretGenerator:
+  - name: postgres-credentials
+    envs:
+      - secrets.env
+    options:
+      disableNameSuffixHash: true
+  
   - name: rabbitmq-credentials
-    literals:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+    envs:
+      - secrets.env
     options:
       disableNameSuffixHash: true
   
   - name: kafka-credentials
-    literals:
-      - KAFKA_CLUSTER_ID=dOFfvAcdQZKE60Enfcsefg
+    envs:
+      - secrets.env
     options:
       disableNameSuffixHash: true
 
 # Images with dev tags
 images:
   - name: niishantdev/pms-simulation
-    newTag: dev-latest
+    newTag: latest
   - name: niishantdev/pms-trade-capture
-    newTag: dev-latest
+    newTag: latest
   - name: niishantdev/pms-validation
-    newTag: dev-latest
+    newTag: latest

@@ -348,9 +348,25 @@ pms-infra/
 
    - RabbitMQ UI: http://localhost:15672 (guest/guest)
 
-## ☁️ AWS Deployment
+### Production Secrets Setup
 
-For production deployment to AWS, see the comprehensive [AWS Deployment Guide](AWS_DEPLOYMENT_GUIDE.md).
+Before deploying to production, configure AWS Secrets Manager:
+
+```bash
+# Set up production database secrets
+./scripts/setup-production-secrets.sh
+
+# Verify secrets are created
+aws secretsmanager list-secrets --filters Key=name,Values=pms/database/prod
+```
+
+**Production Database Configuration:**
+- **RDS Endpoint:** `<YOUR_RDS_ENDPOINT>`
+- **Database:** `<YOUR_DB_NAME>`
+- **Username:** `<YOUR_DB_USERNAME>`
+- **Region:** `<YOUR_AWS_REGION>`
+
+**Note:** RabbitMQ credentials need to be configured separately in `pms/rabbitmq/prod`.
 
 ### Quick AWS Setup
 

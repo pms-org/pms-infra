@@ -13,7 +13,7 @@ variable "environment" {
 variable "cluster_version" {
   description = "Kubernetes version"
   type        = string
-  default     = "1.30"
+  default     = "1.34"
 }
 
 variable "node_instance_types" {
