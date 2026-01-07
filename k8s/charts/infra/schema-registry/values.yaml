@@ -1,0 +1,48 @@
+# Default values for schema-registry chart
+# This chart deploys Confluent Schema Registry
+
+# Service configuration
+service:
+  name: schema-registry
+  namespace: pms
+  port: 8081
+  targetPort: 8081
+  type: ClusterIP
+
+# Deployment configuration
+deployment:
+  replicas: 1
+  image:
+    repository: confluentinc/cp-schema-registry
+    tag: "7.5.0"
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# Schema Registry configuration (non-secret)
+config:
+  SCHEMA_REGISTRY_HOST_NAME: schema-registry
+  SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:19092"
+  SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+
+# Secrets configuration (AWS Secrets Manager)
+secrets:
+  # AWS Secrets Manager secret path
+  path: pms/schema-registry/dev
+
+  # Refresh interval
+  refreshInterval: 1h
+
+  # Secret key mappings
+  data:
+    - secretKey: SCHEMA_REGISTRY_API_KEY
+      remoteKey: SCHEMA_REGISTRY_API_KEY
+    - secretKey: SCHEMA_REGISTRY_API_SECRET
+      remoteKey: SCHEMA_REGISTRY_API_SECRET

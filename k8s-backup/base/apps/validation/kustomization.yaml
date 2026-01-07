@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - external-secret.yaml  # ESO-managed secrets
+
+# ConfigMap Generator - owned by validation service
+configMapGenerator:
+  - name: validation-config
+    envs:
+      - validation.properties
+
+# Note: Secret generation moved to external-secret.yaml (ESO)
+# This kustomization focuses only on non-secret configuration

@@ -1,0 +1,81 @@
+# Default values for simulation service
+# This chart deploys the PMS Simulation microservice
+
+# Service configuration
+service:
+  name: simulation
+  namespace: pms
+  port: 4000
+  targetPort: 4000
+  type: ClusterIP
+
+# Deployment configuration
+deployment:
+  replicas: 1
+  image:
+    repository: niishantdev/pms-simulation
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # Init containers for dependency checking
+  initContainers:
+    postgres:
+      enabled: true
+      image: busybox:1.36
+      command:
+        [
+          "sh",
+          "-c",
+          "until /bin/nc -z postgres 5432; do echo waiting for postgres; sleep 2; done",
+        ]
+    rabbitmq:
+      enabled: true
+      image: busybox:1.36
+      command:
+        [
+          "sh",
+          "-c",
+          "until /bin/nc -z rabbitmq 5552; do echo waiting for rabbitmq stream; sleep 2; done",
+        ]
+
+# Application configuration (non-secret)
+config:
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_STREAM_PORT: "5552"
+  RABBITMQ_STREAM_NAME: trade-stream
+  DB_HOST: postgres
+  DB_NAME: pmsdb
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+# Secrets configuration (AWS Secrets Manager)
+secrets:
+  # AWS Secrets Manager secret path
+  path: pms/simulation/dev
+
+  # Refresh interval
+  refreshInterval: 1h
+
+  # Secret key mappings
+  data:
+    - secretKey: SIMULATION_DB_PASSWORD
+      remoteKey: SIMULATION_DB_PASSWORD
+    - secretKey: SIMULATION_API_KEY
+      remoteKey: SIMULATION_API_KEY
+    - secretKey: SIMULATION_JWT_SECRET
+      remoteKey: SIMULATION_JWT_SECRET

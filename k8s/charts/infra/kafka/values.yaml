@@ -1,0 +1,78 @@
+# Default values for kafka chart
+# This chart deploys Apache Kafka message broker
+
+# Service configuration
+service:
+  name: kafka
+  namespace: pms
+  ports:
+    - name: plaintext
+      port: 9092
+      targetPort: 9092
+    - name: plaintext-internal
+      port: 19092
+      targetPort: 19092
+    - name: controller
+      port: 9093
+      targetPort: 9093
+  type: ClusterIP
+
+# Deployment configuration
+deployment:
+  replicas: 1
+  image:
+    repository: confluentinc/cp-kafka
+    tag: "7.5.0"
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Custom command to unset environment variables
+  command:
+    - /bin/bash
+    - -c
+    - |
+      unset KAFKA_PORT
+      unset KAFKA_SERVICE_PORT
+      unset PORT
+      /etc/confluent/docker/run
+
+# Kafka configuration (non-secret)
+config:
+  KAFKA_PROCESS_ROLES: "broker,controller"
+  KAFKA_CLUSTER_ID: "dOFfvAcdQZKE60Enfcsefg"
+  CLUSTER_ID: "dOFfvAcdQZKE60Enfcsefg"
+  KAFKA_NODE_ID: "1"
+  KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:19092,CONTROLLER://0.0.0.0:9093"
+  KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
+  KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+  KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,PLAINTEXT_INTERNAL://kafka:19092"
+  KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT_INTERNAL"
+  KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"
+  KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+  KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+  KAFKA_DEFAULT_REPLICATION_FACTOR: "1"
+  KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+  KAFKA_MIN_INSYNC_REPLICAS: "1"
+
+# Secrets configuration (AWS Secrets Manager)
+secrets:
+  # AWS Secrets Manager secret path
+  path: pms/kafka/dev
+
+  # Refresh interval
+  refreshInterval: 1h
+
+  # Secret key mappings
+  data:
+    - secretKey: KAFKA_ADMIN_PASSWORD
+      remoteKey: KAFKA_ADMIN_PASSWORD
+    - secretKey: KAFKA_USER_PASSWORD
+      remoteKey: KAFKA_USER_PASSWORD

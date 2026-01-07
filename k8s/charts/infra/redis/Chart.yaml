@@ -1,0 +1,18 @@
+apiVersion: v2
+name: redis
+description: Redis with modules for PMS
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - redis
+  - cache
+  - modules
+  - pms
+  - infra
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: postgres
+description: PostgreSQL database for PMS
+type: application
+version: 0.1.0
+appVersion: "16"
+
+keywords:
+  - postgres
+  - database
+  - pms
+  - infra
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

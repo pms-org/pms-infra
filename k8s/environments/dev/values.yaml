@@ -1,0 +1,59 @@
+# Development environment values
+# This file contains environment-specific overrides for development
+
+# Global settings
+global:
+  environment: dev
+  aws:
+    region: us-east-1
+    accountId: "123456789012"  # Replace with actual AWS account ID
+    clusterName: "pms-dev-cluster"  # Replace with actual EKS cluster name
+
+# External Secrets Operator configuration
+external-secrets:
+  enabled: true
+  aws:
+    region: us-east-1
+    irsa:
+      roleArn: "arn:aws:iam::123456789012:role/pms-dev-cluster-external-secrets"
+
+# Service-specific overrides
+simulation:
+  secrets:
+    path: pms/simulation/dev
+
+trade-capture:
+  secrets:
+    path: pms/trade-capture/dev
+
+validation:
+  secrets:
+    path: pms/validation/dev
+
+# Infrastructure service configurations
+postgres:
+  enabled: true
+  host: postgres
+  port: 5432
+  database: pmsdb
+
+rabbitmq:
+  enabled: true
+  host: rabbitmq
+  streamPort: 5552
+  amqpPort: 5672
+  streamName: trade-stream
+
+kafka:
+  enabled: true
+  bootstrapServers: kafka:9092
+  internalPort: 19092
+
+redis:
+  enabled: true
+  host: redis
+  port: 6379
+
+schema-registry:
+  enabled: true
+  url: http://schema-registry:8081

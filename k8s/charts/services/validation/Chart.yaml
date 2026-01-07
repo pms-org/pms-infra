@@ -1,0 +1,15 @@
+apiVersion: v2
+name: validation
+description: PMS Validation Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - validation
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+

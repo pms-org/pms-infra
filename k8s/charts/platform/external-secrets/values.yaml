@@ -1,0 +1,55 @@
+# Default values for external-secrets chart
+# This chart deploys External Secrets Operator with AWS Secrets Manager integration
+
+# Namespace for ESO deployment
+namespace: external-secrets-system
+
+# ESO Controller configuration
+controller:
+  # Number of replicas
+  replicas: 1
+
+  # Image configuration
+  image:
+    repository: ghcr.io/external-secrets/external-secrets
+    tag: v0.9.13
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# AWS Secrets Manager configuration
+aws:
+  # AWS region for Secrets Manager
+  region: us-east-1
+
+  # IRSA configuration
+  irsa:
+    # Service account name
+    serviceAccountName: external-secrets-sa
+
+    # IAM role ARN (should be templated with cluster-specific values)
+    # This will be overridden in environment-specific values
+    roleArn: "arn:aws:iam::123456789012:role/cluster-name-external-secrets"
+
+# Webhook configuration
+webhook:
+  enabled: true
+  image:
+    repository: ghcr.io/external-secrets/external-secrets
+    tag: v0.9.13
+    pullPolicy: IfNotPresent
+
+# Cert controller configuration
+certController:
+  enabled: true
+  image:
+    repository: ghcr.io/external-secrets/external-secrets
+    tag: v0.9.13
+    pullPolicy: IfNotPresent

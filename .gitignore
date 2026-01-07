@@ -5,6 +5,7 @@
 *.secret
 *.key
 *.pem
+*.env
 
 # Terraform
 *.tfstate

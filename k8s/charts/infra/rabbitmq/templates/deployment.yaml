@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      containers:
+      - name: {{ .Values.service.name }}
+        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
+        imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+        ports:
+{{- range .Values.service.ports }}
+        - containerPort: {{ .targetPort }}
+{{- end }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.service.name }}-config
+        - secretRef:
+            name: {{ .Values.service.name }}-secrets
+        command:
+{{ .Values.deployment.command | toYaml | indent 10 }}
+        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
+        volumeMounts:
+        - name: rabbitmq-data
+          mountPath: /var/lib/rabbitmq
+      volumes:
+      - name: rabbitmq-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.service.name }}-pvc

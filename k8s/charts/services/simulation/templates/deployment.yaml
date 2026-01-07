@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      initContainers:
+{{- if .Values.deployment.initContainers.postgres.enabled }}
+      - name: wait-for-postgres
+        image: {{ .Values.deployment.initContainers.postgres.image }}
+        command:
+{{ .Values.deployment.initContainers.postgres.command | toYaml | indent 10 }}
+{{- end }}
+{{- if .Values.deployment.initContainers.rabbitmq.enabled }}
+      - name: wait-for-rabbitmq
+        image: {{ .Values.deployment.initContainers.rabbitmq.image }}
+        command:
+{{ .Values.deployment.initContainers.rabbitmq.command | toYaml | indent 10 }}
+{{- end }}
+      containers:
+      - name: {{ .Values.service.name }}
+        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
+        imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.service.name }}-config
+        - secretRef:
+            name: {{ .Values.service.name }}-secrets
+        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: kafka
+description: Apache Kafka message broker for PMS
+type: application
+version: 0.1.0
+appVersion: "7.5.0"
+
+keywords:
+  - kafka
+  - message-broker
+  - pms
+  - infra
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

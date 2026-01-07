@@ -1,0 +1,90 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ../../base/external-secrets/
+  - external-secrets-namespace.yaml
+  - ingress.yaml
+
+labels:
+  - pairs:
+      environment: dev
+      managed-by: kustomize
+      project: pms
+    includeSelectors: false
+
+# Patches for Dev environment
+patches:
+  # Set namespace for application resources
+  - patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: pms
+        labels:
+          environment: dev
+    target:
+      kind: Namespace
+      name: pms
+  
+  # Set replicas to 2 for microservices
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      name: simulation
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: trade-capture
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      name: validation-service
+  
+  # Use emptyDir for volumes in dev (no PVCs)
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: pgdata
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: postgres
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: rabbitmq-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: rabbitmq
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: redis-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: redis
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/volumes
+        value:
+        - name: kafka-data
+          emptyDir: {}
+    target:
+      kind: Deployment
+      name: kafka

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      # Disable service links to prevent Kubernetes from injecting service env vars
+      # This prevents SCHEMA_REGISTRY_PORT and other service-related vars
+      enableServiceLinks: false
+      hostname: {{ .Values.service.name }}
+      containers:
+      - name: {{ .Values.service.name }}
+        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
+        imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+        # Custom command to unset deprecated PORT variables before starting
+        # This is the industry-standard fix for Schema Registry PORT deprecation
+        command:
+          - /bin/bash
+          - -c
+          - |
+            unset SCHEMA_REGISTRY_PORT
+            unset SCHEMA_REGISTRY_SERVICE_PORT
+            unset PORT
+            /etc/confluent/docker/run
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.service.name }}-config
+        - secretRef:
+            name: {{ .Values.service.name }}-secrets
+        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}

@@ -1,0 +1,86 @@
+# Production environment values
+# This file contains environment-specific overrides for production
+
+# Global settings
+global:
+  environment: prod
+  aws:
+    region: us-east-1
+    accountId: "123456789012"  # Replace with actual AWS account ID
+    clusterName: "pms-prod-cluster"  # Replace with actual EKS cluster name
+
+# External Secrets Operator configuration
+external-secrets:
+  enabled: true
+  aws:
+    region: us-east-1
+    irsa:
+      roleArn: "arn:aws:iam::123456789012:role/pms-prod-cluster-external-secrets"
+
+# Service-specific overrides with production settings
+simulation:
+  deployment:
+    replicas: 3  # Higher availability in production
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+  secrets:
+    path: pms/simulation/prod
+
+trade-capture:
+  deployment:
+    replicas: 3  # Higher availability in production
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+  secrets:
+    path: pms/trade-capture/prod
+
+validation:
+  deployment:
+    replicas: 2  # Moderate scaling for validation
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+  secrets:
+    path: pms/validation/prod
+
+# Infrastructure service configurations (may be external managed services in prod)
+postgres:
+  enabled: true
+  host: postgres
+  port: 5432
+  database: pmsdb
+
+rabbitmq:
+  enabled: true
+  host: rabbitmq
+  streamPort: 5552
+  amqpPort: 5672
+  streamName: trade-stream
+
+kafka:
+  enabled: true
+  bootstrapServers: kafka:9092
+  internalPort: 19092
+
+redis:
+  enabled: true
+  host: redis
+  port: 6379
+
+schema-registry:
+  enabled: true
+  url: http://schema-registry:8081

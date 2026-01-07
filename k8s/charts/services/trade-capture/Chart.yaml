@@ -1,0 +1,15 @@
+apiVersion: v2
+name: trade-capture
+description: PMS Trade Capture Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - trade-capture
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+

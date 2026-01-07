@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - crds.yaml
+  - controller.yaml
+  - cluster-secret-store.yaml
+
+# ESO components are deployed to external-secrets-system namespace
+namespace: external-secrets-system

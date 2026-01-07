@@ -1,0 +1,46 @@
+{{- if .Values.certController.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-secrets-cert-controller
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: external-secrets
+    app.kubernetes.io/instance: external-secrets
+    app.kubernetes.io/component: cert-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-secrets
+      app.kubernetes.io/instance: external-secrets
+      app.kubernetes.io/component: cert-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: external-secrets
+        app.kubernetes.io/instance: external-secrets
+        app.kubernetes.io/component: cert-controller
+    spec:
+      serviceAccountName: {{ .Values.aws.irsa.serviceAccountName }}
+      containers:
+      - name: cert-controller
+        image: {{ .Values.certController.image.repository }}:{{ .Values.certController.image.tag }}
+        imagePullPolicy: {{ .Values.certController.image.pullPolicy }}
+        args:
+        - --cert-controller
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+{{- end }}
