@@ -18,5 +18,13 @@ module "eks" {
 
   access_entries = var.access_entries
 
+  # EBS CSI Driver Add-on
+  cluster_addons = {
+    aws-ebs-csi-driver = {
+      most_recent = true
+      service_account_role_arn = var.ebs_csi_service_account_role_arn
+    }
+  }
+
   tags = var.tags
 }

@@ -53,7 +53,7 @@ config: {}
 # Secrets configuration (AWS Secrets Manager)
 secrets:
   # AWS Secrets Manager secret path
-  path: pms/redis/dev
+  path: pms/dev/redis
 
   # Refresh interval
   refreshInterval: 1h

@@ -53,6 +53,12 @@ variable "access_entries" {
   default     = {}
 }
 
+variable "ebs_csi_service_account_role_arn" {
+  description = "ARN of the IAM role for EBS CSI driver service account"
+  type        = string
+  default     = null
+}
+
 variable "tags" {
   description = "Tags for the cluster"
   type        = map(string)

@@ -42,7 +42,7 @@ config:
 # Secrets configuration (AWS Secrets Manager)
 secrets:
   # AWS Secrets Manager secret path
-  path: pms/postgres/dev
+  path: pms/dev/database
 
   # Refresh interval
   refreshInterval: 1h

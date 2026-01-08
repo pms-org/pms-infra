@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: pms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      enableServiceLinks: false
+      hostname: kafka
+      containers:
+      - name: kafka
+        image: confluentinc/cp-kafka:7.5.0
+        command:
+          - /bin/bash
+          - -c
+          - |
+            unset KAFKA_PORT
+            unset KAFKA_SERVICE_PORT
+            unset PORT
+            /etc/confluent/docker/run
+        ports:
+        - containerPort: 9092
+        - containerPort: 19092
+        - containerPort: 9093
+        envFrom:
+        - configMapRef:
+            name: kafka-config
+        - secretRef:
+            name: kafka-secrets

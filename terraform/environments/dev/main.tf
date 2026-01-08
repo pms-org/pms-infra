@@ -47,6 +47,8 @@ module "eks" {
     }
   }
 
+  ebs_csi_service_account_role_arn = module.irsa.ebs_csi_role_arn
+
   # Temporarily remove access entries due to SSO role ARN issues
   # access_entries = {
   #   devx_admin = {
@@ -111,7 +113,7 @@ module "irsa" {
   external_secrets_oidc_providers = {
     main = {
       provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["external-secrets:external-secrets"]
+      namespace_service_accounts = ["external-secrets:external-secrets-sa"]
     }
   }
 

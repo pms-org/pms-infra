@@ -20,7 +20,7 @@ output "vpc_id" {
 
 output "update_kubeconfig" {
   description = "Command to update kubeconfig"
-  value       = module.eks.update_kubeconfig
+  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
 }
 
 output "rds_endpoint" {
@@ -36,4 +36,9 @@ output "rds_secret_arn" {
 output "external_secrets_role_arn" {
   description = "External Secrets Operator IAM role ARN"
   value       = module.irsa.external_secrets_role_arn
+}
+
+output "ebs_csi_role_arn" {
+  description = "EBS CSI Driver IAM role ARN"
+  value       = module.irsa.ebs_csi_role_arn
 }

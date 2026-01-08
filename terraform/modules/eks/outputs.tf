@@ -28,7 +28,7 @@ output "node_security_group_id" {
   value       = module.eks.node_security_group_id
 }
 
-output "update_kubeconfig" {
-  description = "Command to update kubeconfig"
-  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
+output "cluster_certificate_authority_data" {
+  description = "Base64 encoded certificate data required to communicate with the cluster"
+  value       = module.eks.cluster_certificate_authority_data
 }

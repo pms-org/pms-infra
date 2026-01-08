@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validation-service
+  namespace: pms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validation-service
+  template:
+    metadata:
+      labels:
+        app: validation-service
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+      - name: wait-for-redis
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z redis 6379; do echo waiting for redis; sleep 2; done']
+      - name: wait-for-kafka
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z kafka 19092; do echo waiting for kafka; sleep 2; done']
+      - name: wait-for-schema-registry
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z schema-registry 8081; do echo waiting for schema-registry; sleep 2; done']
+      containers:
+      - name: validation-service
+        image: niishantdev/pms-validation:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: validation-config
+        - secretRef:
+            name: validation-secrets

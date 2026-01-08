@@ -66,7 +66,7 @@ config:
 # Secrets configuration (AWS Secrets Manager)
 secrets:
   # AWS Secrets Manager secret path
-  path: pms/simulation/dev
+  path: pms/dev/simulation
 
   # Refresh interval
   refreshInterval: 1h
@@ -79,3 +79,11 @@ secrets:
       remoteKey: SIMULATION_API_KEY
     - secretKey: SIMULATION_JWT_SECRET
       remoteKey: SIMULATION_JWT_SECRET
+    - secretKey: SPRING_RABBITMQ_USERNAME
+      remoteKey: SPRING_RABBITMQ_USERNAME
+    - secretKey: SPRING_RABBITMQ_PASSWORD
+      remoteKey: SPRING_RABBITMQ_PASSWORD
+    - secretKey: APP_RABBIT_STREAM_USERNAME
+      remoteKey: SPRING_RABBITMQ_USERNAME
+    - secretKey: APP_RABBIT_STREAM_PASSWORD
+      remoteKey: SPRING_RABBITMQ_PASSWORD

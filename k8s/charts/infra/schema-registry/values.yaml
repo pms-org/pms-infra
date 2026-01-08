@@ -35,7 +35,7 @@ config:
 # Secrets configuration (AWS Secrets Manager)
 secrets:
   # AWS Secrets Manager secret path
-  path: pms/schema-registry/dev
+  path: pms/dev/schema-registry
 
   # Refresh interval
   refreshInterval: 1h

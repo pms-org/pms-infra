@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: pms-project
+  namespace: argocd
+  labels:
+    owner: platform
+spec:
+  description: >-
+    Argo CD project for PMS applications. Restricts deployments to pms-* namespaces and
+    the pms-infra repository.
+  sourceRepos:
+  - 'https://github.com/pms-org/pms-infra'
+  - '*'  # Allow all repos for testing (restrict in production)
+  destinations:
+  - namespace: pms
+    server: 'https://kubernetes.default.svc'
+  - namespace: pms-dev
+    server: 'https://kubernetes.default.svc'
+  - namespace: pms-stage
+    server: 'https://kubernetes.default.svc'
+  - namespace: pms-prod
+    server: 'https://kubernetes.default.svc'
+  - namespace: monitoring
+    server: 'https://kubernetes.default.svc'
+  # Allow namespace creation
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace

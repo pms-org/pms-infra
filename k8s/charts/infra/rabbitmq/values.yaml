@@ -51,12 +51,16 @@ persistence:
   storageClassName: "" # Use default storage class
 
 # RabbitMQ configuration (non-secret)
-config: {}
+config:
+  # Enable stream management plugin and configure permissions
+  RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_stream exit_on_failure false"
+  # Default vhost configuration
+  RABBITMQ_DEFAULT_VHOST: "/"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:
   # AWS Secrets Manager secret path
-  path: pms/rabbitmq/dev
+  path: pms/dev/rabbitmq
 
   # Refresh interval
   refreshInterval: 1h
@@ -67,3 +71,7 @@ secrets:
       remoteKey: RABBITMQ_DEFAULT_USER
     - secretKey: RABBITMQ_DEFAULT_PASS
       remoteKey: RABBITMQ_DEFAULT_PASS
+    - secretKey: RABBITMQ_STREAM_USER
+      remoteKey: RABBITMQ_STREAM_USER
+    - secretKey: RABBITMQ_STREAM_PASS
+      remoteKey: RABBITMQ_STREAM_PASS

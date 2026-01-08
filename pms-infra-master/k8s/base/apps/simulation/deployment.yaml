@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulation
+  namespace: pms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simulation
+  template:
+    metadata:
+      labels:
+        app: simulation
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done']
+      - name: wait-for-rabbitmq
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z rabbitmq 5552; do echo waiting for rabbitmq stream; sleep 2; done']
+      containers:
+      - name: simulation
+        image: niishantdev/pms-simulation:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4000
+        envFrom:
+        - configMapRef:
+            name: simulation-config
+        - secretRef:
+            name: simulation-secrets

@@ -65,7 +65,7 @@ config:
 # Secrets configuration (AWS Secrets Manager)
 secrets:
   # AWS Secrets Manager secret path
-  path: pms/kafka/dev
+  path: pms/dev/kafka
 
   # Refresh interval
   refreshInterval: 1h
