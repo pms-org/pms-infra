@@ -9,3 +9,8 @@ data:
       username: devx-admin
       groups:
         - system:masters
+    - rolearn: arn:aws:iam::209332675115:role/general-eks-node-group-20260107124009170000000007
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes

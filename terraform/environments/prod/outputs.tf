@@ -32,8 +32,3 @@ output "rds_secret_arn" {
   description = "RDS Secrets Manager secret ARN"
   value       = module.rds.secret_arn
 }
-
-output "external_secrets_role_arn" {
-  description = "External Secrets Operator IAM role ARN"
-  value       = module.irsa.external_secrets_role_arn
-}

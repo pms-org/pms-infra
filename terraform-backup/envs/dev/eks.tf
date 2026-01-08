@@ -18,7 +18,6 @@ module "eks" {
       desired_size   = var.node_desired_size
       min_size       = var.node_min_size
       max_size       = var.node_max_size
-      version        = "1.34"
     }
   }
 

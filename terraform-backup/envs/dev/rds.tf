@@ -1,12 +1,14 @@
 # Random password for RDS
 resource "random_password" "rds_password" {
-  length  = 32
-  special = true
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 # Store RDS credentials in Secrets Manager
 resource "aws_secretsmanager_secret" "rds" {
-  name = "pms/${var.environment}/postgres-${random_password.rds_password.id}"
+  name                    = "pms/${var.environment}/postgres"
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "rds" {
@@ -15,10 +17,13 @@ resource "aws_secretsmanager_secret_version" "rds" {
     username = "pmsadmin"
     password = random_password.rds_password.result
     engine   = "postgres"
-    host     = module.rds.db_instance_address
     port     = 5432
     dbname   = "pmsdb"
   })
+  
+  lifecycle {
+    ignore_changes = [secret_string]
+  }
 }
 
 # Security group for RDS
@@ -84,5 +89,24 @@ module "rds" {
 
   tags = {
     Name = "${local.cluster_name}-postgres"
+  }
+}
+
+# Update secret with RDS endpoint after creation (breaks circular dependency)
+resource "null_resource" "update_rds_secret" {
+  depends_on = [module.rds, aws_secretsmanager_secret_version.rds]
+  
+  triggers = {
+    rds_endpoint = module.rds.db_instance_address
+  }
+  
+  provisioner "local-exec" {
+    command = <<-EOT
+      eval $(aws configure export-credentials --format env --profile default)
+      aws secretsmanager put-secret-value \
+        --secret-id ${aws_secretsmanager_secret.rds.id} \
+        --secret-string '{"username":"pmsadmin","password":"${random_password.rds_password.result}","engine":"postgres","host":"${module.rds.db_instance_address}","port":5432,"dbname":"pmsdb"}' \
+        --region us-east-1
+    EOT
   }
 }

@@ -1,10 +1,3 @@
-Below is a **strict, production-grade AUDIT PROMPT** you can give to any LLM (or use yourself) to **verify your Helm-based Kubernetes setup and test it end-to-end on a kind cluster**.
-
-This is **not a tutorial** — this is an **auditor’s checklist + execution plan**.
-It will catch **bad Helm patterns, secret leaks, broken ESO wiring, and fake “it renders” configs**.
-
----
-
 # 🔍 MASTER AUDIT PROMPT — HELM CONFIG + KIND CLUSTER VALIDATION
 
 ## **Role**
@@ -274,15 +267,4 @@ Produce a report containing:
 7. **Production readiness: PASS / FAIL**
 8. **Exact remediation steps**
 
----
-
-## 🔒 Final Intent
-
-This audit ensures:
-
-* Helm is **real Helm**, not YAML-in-Helm
-* Secrets are **secure and external**
-* Dev environments are **honest**
-* Production deploys are **predictable**
-* Migration is **reversible**
 
