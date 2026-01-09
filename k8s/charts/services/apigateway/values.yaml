@@ -1,0 +1,78 @@
+# Default values for apigateway service
+# This chart deploys the PMS apigateway microservice
+
+# Service configuration
+service:
+  name: apigateway
+  namespace: pms
+  port: 8080
+  targetPort: 8080
+  type: ClusterIP
+
+# Deployment configuration
+deployment:
+  replicas: 1
+  image:
+    repository: niishantdev/pms-apigateway
+    tag: latest
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # Generic wait image for init containers
+  waitImage: &waitImage "busybox:1.36"
+
+  # Dependencies list - data-driven approach for init containers
+  dependencies:
+    - name: redis
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z redis 6379; do echo waiting for redis; sleep 2; done"
+    - name: auth
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z auth 8081; do echo waiting for auth; sleep 2; done"
+
+# Application configuration (non-secret)
+config:
+  SERVER_PORT: "8080"
+  SPRING_REDIS_HOST: redis
+  SPRING_REDIS_PORT: "6379"
+  AUTH_ISSUER_URI: http://auth:8081
+  SIMULATION_SERVICE_HOST: pms-simulation
+  SIMULATION_SERVICE_PORT: "8090"
+  PORTFOLIO_SERVICE_HOST: portfolio-id-service
+  PORTFOLIO_SERVICE_PORT: "8095"
+  ANALYTICS_SERVICE_HOST: analytics-service
+  ANALYTICS_SERVICE_PORT: "8082"
+  GATEWAY_HTTPCLIENT_CONNECT_TIMEOUT: "3000"
+  GATEWAY_HTTPCLIENT_RESPONSE_TIMEOUT: "10s"
+  LOG_LEVEL_GATEWAY: DEBUG
+  LOG_LEVEL_OAUTH2: DEBUG
+  LOG_LEVEL_NETTY: INFO
+  CORS_ALLOWED_ORIGINS: "*"
+  CORS_ALLOW_CREDENTIALS: "false"
+
+# Secrets configuration (AWS Secrets Manager)
+secrets:
+  # AWS Secrets Manager secret path
+  path: pms/dev/apigateway
+
+  # Refresh interval
+  refreshInterval: 1h
+
+  # Secret key mappings (if any secrets needed, e.g., for redis auth)
+  data: []

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: apigateway
+description: PMS API Gateway
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - apigateway
+  - pms
+  - gateway
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

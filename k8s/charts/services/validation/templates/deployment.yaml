@@ -19,30 +19,15 @@ spec:
         app: {{ .Values.service.name }}
     spec:
       initContainers:
-{{- if .Values.deployment.initContainers.postgres.enabled }}
-      - name: wait-for-postgres
-        image: {{ .Values.deployment.initContainers.postgres.image }}
+      {{- /* Loop through the dependencies list */}}
+      {{- range .Values.deployment.dependencies }}
+      {{- if .enabled }}
+      - name: wait-for-{{ .name }}
+        image: {{ .image }}
         command:
-{{ .Values.deployment.initContainers.postgres.command | toYaml | indent 10 }}
-{{- end }}
-{{- if .Values.deployment.initContainers.redis.enabled }}
-      - name: wait-for-redis
-        image: {{ .Values.deployment.initContainers.redis.image }}
-        command:
-{{ .Values.deployment.initContainers.redis.command | toYaml | indent 10 }}
-{{- end }}
-{{- if .Values.deployment.initContainers.kafka.enabled }}
-      - name: wait-for-kafka
-        image: {{ .Values.deployment.initContainers.kafka.image }}
-        command:
-{{ .Values.deployment.initContainers.kafka.command | toYaml | indent 10 }}
-{{- end }}
-{{- if .Values.deployment.initContainers.schemaRegistry.enabled }}
-      - name: wait-for-schema-registry
-        image: {{ .Values.deployment.initContainers.schemaRegistry.image }}
-        command:
-{{ .Values.deployment.initContainers.schemaRegistry.command | toYaml | indent 10 }}
-{{- end }}
+          {{- toYaml .command | nindent 10 }}
+      {{- end }}
+      {{- end }}
       containers:
       - name: {{ .Values.service.name }}
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}

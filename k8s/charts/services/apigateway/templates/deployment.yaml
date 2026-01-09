@@ -5,11 +5,6 @@ metadata:
   namespace: {{ .Values.service.namespace }}
 spec:
   replicas: {{ .Values.deployment.replicas }}
-  strategy:
-    type: {{ .Values.deployment.strategy.type }}
-    rollingUpdate:
-      maxUnavailable: {{ .Values.deployment.strategy.rollingUpdate.maxUnavailable }}
-      maxSurge: {{ .Values.deployment.strategy.rollingUpdate.maxSurge }}
   selector:
     matchLabels:
       app: {{ .Values.service.name }}
@@ -19,7 +14,6 @@ spec:
         app: {{ .Values.service.name }}
     spec:
       initContainers:
-      {{- /* Loop through the dependencies list */}}
       {{- range .Values.deployment.dependencies }}
       {{- if .enabled }}
       - name: wait-for-{{ .name }}
@@ -32,11 +26,13 @@ spec:
       - name: {{ .Values.service.name }}
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
-        ports:
-        - containerPort: {{ .Values.service.targetPort }}
+        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
         envFrom:
         - configMapRef:
             name: {{ .Values.service.name }}-config
+        {{- if .Values.secrets.data }}
         - secretRef:
             name: {{ .Values.service.name }}-secrets
-        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}

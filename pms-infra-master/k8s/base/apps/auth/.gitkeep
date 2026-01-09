@@ -1,7 +1,0 @@
-# Placeholder for PMS Auth Service
-# Team: Add your Kubernetes manifests here
-# Required files:
-# - deployment.yaml
-# - service.yaml
-# - <service-name>.properties (non-sensitive config)
-# - <service-name>.env (secrets)

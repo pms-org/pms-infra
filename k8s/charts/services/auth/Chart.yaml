@@ -1,0 +1,16 @@
+apiVersion: v2
+name: auth
+description: PMS Auth Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - auth
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

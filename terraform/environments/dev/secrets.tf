@@ -107,3 +107,17 @@ resource "aws_secretsmanager_secret_version" "validation" {
     SPRING_RABBITMQ_PASSWORD   = "rabbitmq"
   })
 }
+
+# Auth Service Secrets
+data "aws_secretsmanager_secret" "auth" {
+  name = "pms/${var.environment}/auth"
+}
+
+resource "aws_secretsmanager_secret_version" "auth" {
+  secret_id = data.aws_secretsmanager_secret.auth.id
+  secret_string = jsonencode({
+    DATASOURCE_USER = "pms"
+    DATASOURCE_PASS = "pms"
+    JWT_SECRET      = "auth-jwt-secret-789"
+  })
+}
