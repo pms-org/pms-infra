@@ -13,23 +13,6 @@ spec:
       labels:
         app: {{ .Values.service.name }}
     spec:
-      initContainers:
-      - name: rabbitmq-init
-        image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
-        command:
-        - bash
-        - -c
-        - |
-          # Wait for RabbitMQ to be ready
-          until rabbitmq-diagnostics -q ping; do
-            echo "Waiting for RabbitMQ..."
-            sleep 2
-          done
-          
-          # Enable stream plugin (in case it's not enabled)
-          rabbitmq-plugins enable rabbitmq_stream --offline
-          
-          echo "RabbitMQ is ready"
       containers:
       - name: {{ .Values.service.name }}
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}

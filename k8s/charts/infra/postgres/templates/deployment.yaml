@@ -24,6 +24,9 @@ spec:
             name: {{ .Values.service.name }}-config
         - secretRef:
             name: {{ .Values.service.name }}-secrets
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
         volumeMounts:
         - name: pgdata

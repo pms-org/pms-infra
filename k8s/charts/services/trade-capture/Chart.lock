@@ -1,0 +1,6 @@
+dependencies:
+- name: pms-library
+  repository: file://../../platform/pms-library
+  version: 1.0.0
+digest: sha256:48c81c4e8ee0f40e2b2c462ae3ebe5584bc4253cde2f070d719f03af820efe86
+generated: "2026-01-09T12:48:18.739622879Z"

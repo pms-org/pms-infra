@@ -26,25 +26,22 @@ deployment:
       cpu: 500m
       memory: 1Gi
 
-  # Generic wait image for init containers
-  waitImage: &waitImage "busybox:1.36"
-
-  # Dependencies list - data-driven approach for init containers
-  dependencies:
-    - name: postgres
-      enabled: true
-      image: *waitImage
-      command:
-        - sh
-        - -c
-        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
-    - name: apigateway
-      enabled: true
-      image: *waitImage
-      command:
-        - sh
-        - -c
-        - "until nc -z apigateway 8080; do echo waiting for api-gateway; sleep 2; done"
+# Init containers configuration
+initContainers:
+  postgres:
+    enabled: true
+    image: busybox:1.36
+    command:
+      - sh
+      - -c
+      - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+  apigateway:
+    enabled: true
+    image: busybox:1.36
+    command:
+      - sh
+      - -c
+      - "until nc -z apigateway 8080; do echo waiting for api-gateway; sleep 2; done"
 # Application configuration (non-secret)
 config:
   DB_HOST: postgres
@@ -71,3 +68,12 @@ secrets:
       remoteKey: DATASOURCE_PASS
     - secretKey: JWT_SECRET
       remoteKey: JWT_SECRET
+
+  # Toggle between External Secrets and fallback secrets
+  useExternalSecrets: false
+
+  # Fallback secrets (used when useExternalSecrets: false)
+  fallback:
+    datasourceUser: pms
+    datasourcePass: pmspassword
+    jwtSecret: dev-jwt-secret-change-in-production

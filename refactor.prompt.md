@@ -20,7 +20,15 @@
 2. Generate `pms-eks/values.yaml` with the wiring logic.
 3. Show a "Before vs After" refactor for the `trade-capture` service's `values.yaml` to make it compatible with this umbrella.
 
+**Phase 4: Docker Standardization (JAR Pathing Rules)**
+
+1. For all Java microservices, ensure Dockerfile uses predictable JAR naming.
+2. Update pom.xml to include `<finalName>app</finalName>` in `<build>` section.
+3. Change Dockerfile COPY command from wildcard (`auth-*.jar`) to explicit (`app.jar`).
+4. Use absolute paths in ENTRYPOINT: `exec java $JAVA_OPTS -jar /app/app.jar`.
+5. Ensure volume mounts in Kubernetes do not overlay `/app` directory, use subdirectories like `/app/logs`.
+6. Validate that workingDir is set to `/app` in deployment templates and volumeMounts do not conflict with application binary path.
+
 **Constraints:**
-* Do not hallucinate files; use the actual file paths from `@workspace`.
-* Do not delete files yet.
-* Ensure all services can still be toggled off via the parent `values.yaml`.
+* Apply these rules to all services with Dockerfiles.
+* Prevent "Jar file not found" errors by eliminating wildcards and path ambiguities.
