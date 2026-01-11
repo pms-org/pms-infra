@@ -28,6 +28,26 @@ spec:
           {{- toYaml .command | nindent 10 }}
       {{- end }}
       {{- end }}
+      {{- if .Values.deployment.streamCleanup.enabled }}
+      - name: cleanup-rabbitmq-stream
+        image: {{ .Values.deployment.streamCleanup.image }}
+        command:
+          - sh
+          - -c
+          - |
+            echo "Checking if stream {{ .Values.deployment.streamCleanup.streamName }} exists..."
+            if rabbitmqctl list_queues -p / name | grep -q "{{ .Values.deployment.streamCleanup.streamName }}"; then
+              echo "Deleting existing stream {{ .Values.deployment.streamCleanup.streamName }}..."
+              rabbitmqctl delete_queue {{ .Values.deployment.streamCleanup.streamName }} --vhost / || true
+              echo "Stream deleted successfully"
+            else
+              echo "Stream does not exist, skipping cleanup"
+            fi
+            echo "Cleanup complete"
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq
+      {{- end }}
       containers:
       - name: {{ .Values.service.name }}
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
@@ -40,3 +60,29 @@ spec:
             name: {{ .Values.service.name }}-secrets
         ports:
         - containerPort: {{ .Values.service.targetPort }}
+        {{- if .Values.deployment.healthChecks.enabled }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.deployment.healthChecks.liveness.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.deployment.healthChecks.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.healthChecks.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.deployment.healthChecks.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.healthChecks.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.deployment.healthChecks.readiness.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.deployment.healthChecks.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.healthChecks.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.deployment.healthChecks.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.healthChecks.readiness.failureThreshold }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.deployment.healthChecks.startup.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.deployment.healthChecks.startup.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.healthChecks.startup.periodSeconds }}
+          timeoutSeconds: {{ .Values.deployment.healthChecks.startup.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.healthChecks.startup.failureThreshold }}
+        {{- end }}

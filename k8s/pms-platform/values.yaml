@@ -12,7 +12,7 @@ kafka:
 schemaRegistry:
   enabled: true
 externalSecrets:
-  enabled: true
+  enabled: false
 
 apigateway:
   enabled: true

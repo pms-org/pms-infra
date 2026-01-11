@@ -40,15 +40,29 @@ spec:
         - secretRef:
             name: {{ .Values.service.name }}-secrets
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
-        readinessProbe:
-          httpGet:
-            path: /actuator/health
-            port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: 30
-          periodSeconds: 10
+        {{- if .Values.deployment.healthChecks.enabled }}
         livenessProbe:
           httpGet:
-            path: /actuator/health
+            path: {{ .Values.deployment.healthChecks.liveness.path }}
             port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: 60
-          periodSeconds: 30
+          initialDelaySeconds: {{ .Values.deployment.healthChecks.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.healthChecks.liveness.periodSeconds }}
+          timeoutSeconds: {{ .Values.deployment.healthChecks.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.healthChecks.liveness.failureThreshold }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.deployment.healthChecks.readiness.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.deployment.healthChecks.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.healthChecks.readiness.periodSeconds }}
+          timeoutSeconds: {{ .Values.deployment.healthChecks.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.healthChecks.readiness.failureThreshold }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.deployment.healthChecks.startup.path }}
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: {{ .Values.deployment.healthChecks.startup.initialDelaySeconds }}
+          periodSeconds: {{ .Values.deployment.healthChecks.startup.periodSeconds }}
+          timeoutSeconds: {{ .Values.deployment.healthChecks.startup.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.healthChecks.startup.failureThreshold }}
+        {{- end }}

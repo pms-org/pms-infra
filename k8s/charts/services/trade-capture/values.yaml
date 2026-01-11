@@ -33,6 +33,28 @@ deployment:
       cpu: 500m
       memory: 1Gi
 
+  # Health check probes
+  healthChecks:
+    enabled: true
+    liveness:
+      path: /actuator/health/liveness
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      path: /actuator/health/readiness
+      initialDelaySeconds: 30
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+    startup:
+      path: /actuator/health/liveness
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
+
   # Generic wait image for init containers
   waitImage: &waitImage "busybox:1.36"
 
@@ -52,6 +74,13 @@ deployment:
         - sh
         - -c
         - "until nc -z rabbitmq 5552; do echo waiting for rabbitmq stream; sleep 2; done"
+    - name: simulation
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z simulation 8090; do echo waiting for simulation service; sleep 2; done"
     - name: kafka
       enabled: true
       image: *waitImage
