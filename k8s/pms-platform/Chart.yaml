@@ -1,0 +1,65 @@
+# pms-platform/Chart.yaml
+apiVersion: v2
+name: pms-platform
+description: PMS Platform (Infra + Services)
+type: application
+version: 1.0.0
+
+dependencies:
+  # Infra
+  - name: postgres
+    repository: file://../charts/infra/postgres
+    version: 0.1.0
+    condition: postgres.enabled
+
+  - name: rabbitmq
+    repository: file://../charts/infra/rabbitmq
+    version: 0.1.0
+    condition: rabbitmq.enabled
+
+  - name: redis
+    repository: file://../charts/infra/redis
+    version: 0.1.0
+    condition: redis.enabled
+
+  - name: kafka
+    repository: file://../charts/infra/kafka
+    version: 0.1.0
+    condition: kafka.enabled
+
+  - name: schema-registry
+    repository: file://../charts/infra/schema-registry
+    version: 0.1.0
+    condition: schemaRegistry.enabled
+
+  # Platform
+  - name: external-secrets
+    repository: file://../charts/platform/external-secrets
+    version: 0.1.0
+    condition: externalSecrets.enabled
+
+  # Services
+  - name: apigateway
+    repository: file://../charts/services/apigateway
+    version: 0.1.0
+    condition: apigateway.enabled
+
+  - name: auth
+    repository: file://../charts/services/auth
+    version: 0.1.0
+    condition: auth.enabled
+
+  - name: simulation
+    repository: file://../charts/services/simulation
+    version: 0.1.0
+    condition: simulation.enabled
+
+  - name: trade-capture
+    repository: file://../charts/services/trade-capture
+    version: 0.1.0
+    condition: tradeCapture.enabled
+
+  - name: validation
+    repository: file://../charts/services/validation
+    version: 0.1.0
+    condition: validation.enabled

@@ -52,10 +52,12 @@ persistence:
 
 # RabbitMQ configuration (non-secret)
 config:
-  # Enable stream management plugin and configure permissions
-  RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_stream exit_on_failure false"
   # Default vhost configuration
   RABBITMQ_DEFAULT_VHOST: "/"
+  # Configure RabbitMQ to advertise service hostname for stream clients
+  RABBITMQ_USE_LONGNAME: "false"
+  # Override the advertised hostname for stream protocol and configure exit behavior
+  RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_stream advertised_host rabbitmq -rabbitmq_stream exit_on_failure false"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

@@ -15,7 +15,14 @@ deployment:
   image:
     repository: niishantdev/pms-simulation
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
+
+  # Rolling update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
 
   # Resource limits and requests
   resources:
@@ -26,35 +33,42 @@ deployment:
       cpu: 500m
       memory: 1Gi
 
-# Init containers configuration
-initContainers:
-  postgres:
-    enabled: true
-    image: busybox:1.36
-    command:
-      - sh
-      - -c
-      - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
-  rabbitmq:
-    enabled: true
-    image: busybox:1.36
-    command:
-      - sh
-      - -c
-      - "until nc -z rabbitmq 5552; do echo waiting for rabbitmq stream; sleep 2; done"
-  auth:
-    enabled: true
-    image: busybox:1.36
-    command:
-      - sh
-      - -c
-      - "until nc -z auth 8081; do echo waiting for auth service; sleep 2; done"
+  # Generic wait image for init containers
+  waitImage: &waitImage "busybox:1.36"
+
+  # Dependencies list - data-driven approach for init containers
+  dependencies:
+    - name: postgres
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+    - name: rabbitmq
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z rabbitmq 5552; do echo waiting for rabbitmq stream; sleep 2; done"
+    - name: auth
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z auth 8081; do echo waiting for auth service; sleep 2; done"
 
 # Application configuration (non-secret)
 config:
   RABBITMQ_HOST: rabbitmq
   RABBITMQ_STREAM_PORT: "5552"
   RABBITMQ_STREAM_NAME: trade-stream
+  SPRING_RABBITMQ_STREAM_HOST: rabbitmq
+  SPRING_RABBITMQ_STREAM_PORT: "5552"
+  SPRING_RABBITMQ_HOST: rabbitmq
+  SPRING_RABBITMQ_PORT: "5552"
   DB_HOST: postgres
   DB_NAME: pmsdb
   SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
@@ -86,7 +100,11 @@ secrets:
       remoteKey: SPRING_RABBITMQ_USERNAME
     - secretKey: SPRING_RABBITMQ_PASSWORD
       remoteKey: SPRING_RABBITMQ_PASSWORD
-    - secretKey: APP_RABBIT_STREAM_USERNAME
+    - secretKey: SPRING_RABBITMQ_STREAM_USERNAME
       remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: APP_RABBIT_STREAM_PASSWORD
+    - secretKey: SPRING_RABBITMQ_STREAM_PASSWORD
       remoteKey: SPRING_RABBITMQ_PASSWORD
+    - secretKey: SPRING_RABBITMQ_HOST
+      remoteKey: SPRING_RABBITMQ_HOST
+    - secretKey: SPRING_RABBITMQ_PORT
+      remoteKey: SPRING_RABBITMQ_PORT

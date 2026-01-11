@@ -1,0 +1,30 @@
+# pms-platform/values.yaml
+
+# Global toggles
+postgres:
+  enabled: true
+rabbitmq:
+  enabled: true
+redis:
+  enabled: true
+kafka:
+  enabled: true
+schemaRegistry:
+  enabled: true
+externalSecrets:
+  enabled: true
+
+apigateway:
+  enabled: true
+auth:
+  enabled: true
+simulation:
+  enabled: true
+tradeCapture:
+  enabled: true
+validation:
+  enabled: true
+
+# Optional shared values
+global:
+  environment: prod

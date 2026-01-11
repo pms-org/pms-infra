@@ -1,0 +1,36 @@
+dependencies:
+- name: postgres
+  repository: file://../charts/infra/postgres
+  version: 0.1.0
+- name: rabbitmq
+  repository: file://../charts/infra/rabbitmq
+  version: 0.1.0
+- name: redis
+  repository: file://../charts/infra/redis
+  version: 0.1.0
+- name: kafka
+  repository: file://../charts/infra/kafka
+  version: 0.1.0
+- name: schema-registry
+  repository: file://../charts/infra/schema-registry
+  version: 0.1.0
+- name: external-secrets
+  repository: file://../charts/platform/external-secrets
+  version: 0.1.0
+- name: apigateway
+  repository: file://../charts/services/apigateway
+  version: 0.1.0
+- name: auth
+  repository: file://../charts/services/auth
+  version: 0.1.0
+- name: simulation
+  repository: file://../charts/services/simulation
+  version: 0.1.0
+- name: trade-capture
+  repository: file://../charts/services/trade-capture
+  version: 0.1.0
+- name: validation
+  repository: file://../charts/services/validation
+  version: 0.1.0
+digest: sha256:44a9644326eb4897ad86575c874c314ce5584e266de15663158b44d01447f879
+generated: "2026-01-10T19:41:49.798963229Z"

@@ -14,16 +14,15 @@ spec:
         app:  {{ .Values.service.name }}
     spec:
       initContainers:
-{{ if .Values.initContainers.postgres.enabled }}
-      - name: wait-for-postgres
-        image: {{ .Values.initContainers.postgres.image }}
-        command: {{ toYaml .Values.initContainers.postgres.command | nindent 12 }}
-{{ end }}
-{{ if .Values.initContainers.apigateway.enabled }}
-      - name: wait-for-apigateway
-        image: {{ .Values.initContainers.apigateway.image }}
-        command: {{ toYaml .Values.initContainers.apigateway.command | nindent 12 }}
-{{ end }}
+      {{- /* Loop through the dependencies list */}}
+      {{- range .Values.deployment.dependencies }}
+      {{- if .enabled }}
+      - name: wait-for-{{ .name }}
+        image: {{ .image }}
+        command:
+          {{- toYaml .command | nindent 10 }}
+      {{- end }}
+      {{- end }}
       containers:
       - name:  {{ .Values.service.name }}
         image:  {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
@@ -36,3 +35,15 @@ spec:
             name:  {{ .Values.service.name }}-secrets
         ports:
         - containerPort:  {{ .Values.service.targetPort }}
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: {{ .Values.service.targetPort }}
+          initialDelaySeconds: 60
+          periodSeconds: 30
