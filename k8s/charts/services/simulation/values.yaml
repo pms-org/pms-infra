@@ -27,15 +27,15 @@ deployment:
   # Resource limits and requests
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 200m
+      memory: 512Mi
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 1000m
+      memory: 2Gi
 
   # Health check probes
   healthChecks:
-    enabled: true
+    enabled: false
     liveness:
       path: /actuator/health/liveness
       initialDelaySeconds: 60

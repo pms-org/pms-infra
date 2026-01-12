@@ -15,7 +15,7 @@ deployment:
   image:
     repository: niishantdev/pms-auth
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
 
   # Resource limits and requests
   resources:
@@ -28,7 +28,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: true
+    enabled: false
     liveness:
       path: /actuator/health/liveness
       initialDelaySeconds: 60

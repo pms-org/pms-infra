@@ -20,10 +20,19 @@ auth:
   enabled: true
 simulation:
   enabled: true
+  deployment:
+    healthChecks:
+      enabled: false
 tradeCapture:
   enabled: true
+  deployment:
+    healthChecks:
+      enabled: false
 validation:
   enabled: true
+  deployment:
+    healthChecks:
+      enabled: false
 
 # Optional shared values
 global:
