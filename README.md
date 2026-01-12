@@ -1,53 +1,16 @@
-# PMS Infrastructure Repository# pms-infra — Infrastructure (GitOps)
+# PMS Infrastructure Repository
 
+A comprehensive GitOps infrastructure repository for the Portfolio Management System (PMS), featuring Kubernetes manifests, ArgoCD applications, and infrastructure automation using Terraform on AWS EKS.
 
+## � Documentation
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)This repository is the single source of truth for Kubernetes manifests and Argo CD Applications for PMS.
-
-[![Kubernetes](https://img.shields.io/badge/kubernetes-1.27+-blue.svg)](https://kubernetes.io/)
-
-[![ArgoCD](https://img.shields.io/badge/argocd-2.7+-blue.svg)](https://argo-cd.readthedocs.io/)Key principles
-
-- Argo CD is the only deployment mechanism. No kubectl in CI.
-
-A comprehensive GitOps infrastructure repository for the Portfolio Management System (PMS), featuring Kubernetes manifests, ArgoCD applications, and infrastructure automation using modern DevOps practices.- Image tags are immutable (use Git SHAs).
-
-- No secrets in Git; use External Secrets Operator or AWS Secrets Manager (IRSA recommended).
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Repository Structure](#repository-structure)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [AWS Deployment](#aws-deployment)
-- [Configuration](#configuration)
-- [Deployment](#deployment)
-- [CI/CD](#cicd)
-- [Infrastructure](#infrastructure)
-- [Security](#security)
-- [Monitoring](#monitoring)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-
-- [Infrastructure](#infrastructure)```
-
-- [Security](#security)
-
-- [Monitoring](#monitoring)How deployments work (summary)
-
-- [Troubleshooting](#troubleshooting)1. App CI builds an immutable image and updates `services/<service>/kustomization.yaml` (images.newTag).
-
-- [Contributing](#contributing)2. CI commits that single-file change to `pms-infra`.
-
-3. Argo CD detects the change and applies the new manifest to the target namespace.
+- **[Quick Start Guide](QUICK_START.md)** - Get up and running in 10 minutes
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment documentation with all commands
+- **[ArgoCD Setup](argocd/install/README.md)** - ArgoCD installation and configuration
 
 ## 🎯 Overview
 
-CI contract (what to modify)
-
-This repository implements a **GitOps-driven infrastructure** for the PMS (Portfolio Management System) using:- File: `services/<service>/kustomization.yaml` — change only the `images` newTag field.
+This repository implements a **GitOps-driven infrastructure** for the PMS (Portfolio Management System) using:
 
 
 
