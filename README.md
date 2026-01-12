@@ -2,11 +2,13 @@
 
 A comprehensive GitOps infrastructure repository for the Portfolio Management System (PMS), featuring Kubernetes manifests, ArgoCD applications, and infrastructure automation using Terraform on AWS EKS.
 
-## � Documentation
+## 📖 Documentation
 
-- **[Quick Start Guide](QUICK_START.md)** - Get up and running in 10 minutes
-- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment documentation with all commands
-- **[ArgoCD Setup](argocd/install/README.md)** - ArgoCD installation and configuration
+- 🚀 **[Quick Start Guide](QUICK_START.md)** - Get up and running in 10 minutes
+- 📚 **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment documentation with all commands
+- 🔑 **[Access Information](ACCESS_INFO.md)** - Credentials, endpoints, and troubleshooting commands
+- 🧹 **[Cleanup Summary](CLEANUP_SUMMARY.md)** - Recent infrastructure cleanup and current state
+- ⚙️ **[ArgoCD Setup](argocd/install/README.md)** - ArgoCD installation and configuration
 
 ## 🎯 Overview
 
