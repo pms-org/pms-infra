@@ -98,28 +98,18 @@ deployment:
 
 # Application configuration (non-secret)
 config:
+  # Note: DB_HOST, DB_PORT, DB_NAME, RABBITMQ_HOST, RABBITMQ_STREAM_PORT,
+  # RABBITMQ_STREAM_NAME, KAFKA_BOOTSTRAP_SERVERS, SCHEMA_REGISTRY_URL
+  # All come from global config in pms-platform
+
+  # Service-specific config
+  SERVER_PORT: "8082"
   SPRING_PROFILES_ACTIVE: docker
-  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
-  SPRING_RABBITMQ_HOST: rabbitmq
-  SPRING_RABBITMQ_PORT: "5672"
-  DB_HOST: postgres
-  DB_NAME: pmsdb
-  DATASOURCE_HIKARI_POOL_SIZE: "20"
+  TRADE_CAPTURE_POOL_SIZE: "20"
   JPA_OPEN_IN_VIEW: "false"
-  JDBC_BATCH_SIZE: "500"
-  APP_RABBIT_STREAM_HOST: rabbitmq
-  APP_RABBIT_STREAM_PORT: "5552"
-  APP_RABBIT_STREAM_NAME: trade-stream
-  APP_RABBIT_STREAM_CONSUMER_NAME: trade-capture-group
-  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  SCHEMA_REGISTRY_URL: http://schema-registry:8081
-  SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: org.apache.kafka.common.serialization.StringSerializer
-  SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
-  SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
-  SPRING_KAFKA_PRODUCER_PROPERTIES_AUTO_REGISTER_SCHEMAS: "true"
-  BATCH_SIZE: "500"
-  BATCH_TIMEOUT_MS: "100"
+  TRADE_CAPTURE_BATCH_SIZE: "500"
+  TRADE_CAPTURE_BATCH_TIMEOUT_MS: "100"
+  TRADE_CAPTURE_CONSUMER_GROUP: trade-capture-group
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:
@@ -129,19 +119,9 @@ secrets:
   # Refresh interval
   refreshInterval: 1h
 
-  # Secret key mappings
+  # Service-specific secret key mappings (Global secrets come from pms-global-secrets)
   data:
-    - secretKey: TRADE_CAPTURE_DB_PASSWORD
-      remoteKey: TRADE_CAPTURE_DB_PASSWORD
     - secretKey: TRADE_CAPTURE_API_KEY
       remoteKey: TRADE_CAPTURE_API_KEY
     - secretKey: TRADE_CAPTURE_JWT_SECRET
       remoteKey: TRADE_CAPTURE_JWT_SECRET
-    - secretKey: SPRING_RABBITMQ_USERNAME
-      remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: SPRING_RABBITMQ_PASSWORD
-      remoteKey: SPRING_RABBITMQ_PASSWORD
-    - secretKey: APP_RABBIT_STREAM_USERNAME
-      remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: APP_RABBIT_STREAM_PASSWORD
-      remoteKey: SPRING_RABBITMQ_PASSWORD

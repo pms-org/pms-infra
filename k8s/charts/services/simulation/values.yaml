@@ -90,23 +90,10 @@ deployment:
 
 # Application configuration (non-secret)
 config:
-  RABBITMQ_HOST: rabbitmq
-  RABBITMQ_STREAM_PORT: "5552"
-  RABBITMQ_STREAM_NAME: trade-stream
-  SPRING_RABBITMQ_STREAM_HOST: rabbitmq
-  SPRING_RABBITMQ_STREAM_PORT: "5552"
-  SPRING_RABBITMQ_HOST: rabbitmq
-  SPRING_RABBITMQ_PORT: "5552"
-  DB_HOST: postgres
-  DB_NAME: pmsdb
-  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
-  SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-  SPRING_JPA_HIBERNATE_DDL_AUTO: update
-  SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  SCHEMA_REGISTRY_URL: http://schema-registry:8081
-  SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  # Note: RABBITMQ_HOST, RABBITMQ_STREAM_PORT, RABBITMQ_STREAM_NAME
+  # DB_HOST, DB_PORT, DB_NAME, KAFKA_BOOTSTRAP_SERVERS, SCHEMA_REGISTRY_URL
+  # All come from global config in pms-platform
+  SERVER_PORT: "8090"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:
@@ -116,23 +103,9 @@ secrets:
   # Refresh interval
   refreshInterval: 1h
 
-  # Secret key mappings
+  # Service-specific secret key mappings (Global secrets come from pms-global-secrets)
   data:
-    - secretKey: SIMULATION_DB_PASSWORD
-      remoteKey: SIMULATION_DB_PASSWORD
     - secretKey: SIMULATION_API_KEY
       remoteKey: SIMULATION_API_KEY
     - secretKey: SIMULATION_JWT_SECRET
       remoteKey: SIMULATION_JWT_SECRET
-    - secretKey: SPRING_RABBITMQ_USERNAME
-      remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: SPRING_RABBITMQ_PASSWORD
-      remoteKey: SPRING_RABBITMQ_PASSWORD
-    - secretKey: SPRING_RABBITMQ_STREAM_USERNAME
-      remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: SPRING_RABBITMQ_STREAM_PASSWORD
-      remoteKey: SPRING_RABBITMQ_PASSWORD
-    - secretKey: SPRING_RABBITMQ_HOST
-      remoteKey: SPRING_RABBITMQ_HOST
-    - secretKey: SPRING_RABBITMQ_PORT
-      remoteKey: SPRING_RABBITMQ_PORT

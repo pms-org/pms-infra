@@ -70,13 +70,9 @@ deployment:
 
 # Application configuration (non-secret)
 config:
-  DB_HOST: postgres
-  DB_NAME: pmsdb
-  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
-  SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-  SPRING_JPA_HIBERNATE_DDL_AUTO: update
-  SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI: http://apigateway:8080/oauth2/jwks
+  # Note: DB_HOST, DB_PORT, DB_NAME come from global config
+  # Service-specific config only
+  SERVER_PORT: "8081"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:
@@ -86,14 +82,10 @@ secrets:
   # Refresh interval
   refreshInterval: 1h
 
-  # Secret key mappings
+  # Service-specific secret key mappings (Global secrets come from pms-global-secrets)
   data:
-    - secretKey: DATASOURCE_USER
-      remoteKey: DATASOURCE_USER
-    - secretKey: DATASOURCE_PASS
-      remoteKey: DATASOURCE_PASS
-    - secretKey: JWT_SECRET
-      remoteKey: JWT_SECRET
+    - secretKey: AUTH_JWT_SECRET
+      remoteKey: AUTH_JWT_SECRET
 
   # Toggle between External Secrets and fallback secrets
   useExternalSecrets: false

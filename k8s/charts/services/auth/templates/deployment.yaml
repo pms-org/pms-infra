@@ -29,8 +29,16 @@ spec:
         imagePullPolicy:  {{ .Values.deployment.image.pullPolicy }}
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
         envFrom:
+        # Global config (DB, Redis, RabbitMQ, Kafka, etc.)
+        - configMapRef:
+            name: pms-global-config
+        # Service-specific config
         - configMapRef:
             name:  {{ .Values.service.name }}-config
+        # Global secrets (DB_USERNAME, DB_PASSWORD, etc.)
+        - secretRef:
+            name: pms-global-secrets
+        # Service-specific secrets
         - secretRef:
             name:  {{ .Values.service.name }}-secrets
         ports:

@@ -96,26 +96,14 @@ deployment:
 
 # Application configuration (non-secret)
 config:
-  SPRING_APPLICATION_NAME: validation
-  DB_HOST: postgres
-  DB_PORT: "5432"
-  DB_NAME: pmsdb
-  DATASOURCE_DRIVER: org.postgresql.Driver
-  HIBERNATE_DDL_AUTO: update
-  HIBERNATE_SHOW_SQL: "false"
-  HIBERNATE_FORMAT_SQL: "true"
-  HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-  REDIS_HOST: redis
-  REDIS_PORT: "6379"
-  REDIS_TIMEOUT: 2s
-  CACHE_TYPE: redis
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-  KAFKA_CONSUMER_GROUP_ID: validation-consumer-group
-  SCHEMA_REGISTRY_URL: http://schema-registry:8081
+  # Note: DB_HOST, DB_PORT, DB_NAME, REDIS_HOST, REDIS_PORT, REDIS_TIMEOUT,
+  # CACHE_TYPE, KAFKA_BOOTSTRAP_SERVERS, SCHEMA_REGISTRY_URL,
+  # INCOMING_TRADES_TOPIC, OUTGOING_VALID_TRADES_TOPIC, OUTGOING_INVALID_TRADES_TOPIC
+  # All come from global config in pms-platform
+
+  # Service-specific config
   SERVER_PORT: "8080"
-  INCOMING_TRADES_TOPIC: raw-trades-topic
-  OUTGOING_VALID_TRADES_TOPIC: valid-trades-topic
-  OUTGOING_INVALID_TRADES_TOPIC: invalid-trades-topic
+  VALIDATION_CONSUMER_GROUP: validation-consumer-group
   LOGGING_LEVEL: DEBUG
 
 # Secrets configuration (AWS Secrets Manager)
@@ -126,22 +114,12 @@ secrets:
   # Refresh interval
   refreshInterval: 1h
 
-  # Secret key mappings
+  # Service-specific secret key mappings (Global secrets come from pms-global-secrets)
   data:
     - secretKey: VALIDATION_API_KEY
       remoteKey: VALIDATION_API_KEY
-    - secretKey: VALIDATION_DB_PASSWORD
-      remoteKey: VALIDATION_DB_PASSWORD
     - secretKey: VALIDATION_JWT_SECRET
       remoteKey: VALIDATION_JWT_SECRET
-    - secretKey: SPRING_RABBITMQ_USERNAME
-      remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: SPRING_RABBITMQ_PASSWORD
-      remoteKey: SPRING_RABBITMQ_PASSWORD
-    - secretKey: APP_RABBIT_STREAM_USERNAME
-      remoteKey: SPRING_RABBITMQ_USERNAME
-    - secretKey: APP_RABBIT_STREAM_PASSWORD
-      remoteKey: SPRING_RABBITMQ_PASSWORD
 
 # External Secrets Operator dependency
 external-secrets:

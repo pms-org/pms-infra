@@ -100,14 +100,31 @@ Shared secrets used across multiple services.
 
 | Variable | Description | AWS Key Path | Used By | Source |
 |----------|-------------|--------------|---------|--------|
+| `DB_USERNAME` | PostgreSQL database username | `pms/dev/database:POSTGRES_USER` | auth, simulation, trade-capture, validation | AWS Secrets Manager |
 | `DB_PASSWORD` | PostgreSQL database password | `pms/dev/database:POSTGRES_PASSWORD` | auth, simulation, trade-capture, validation | AWS Secrets Manager |
-| `RABBITMQ_USERNAME` | RabbitMQ username | `pms/dev/rabbitmq:RABBITMQ_DEFAULT_USER` | simulation, trade-capture, validation | AWS Secrets Manager |
-| `RABBITMQ_PASSWORD` | RabbitMQ password | `pms/dev/rabbitmq:RABBITMQ_DEFAULT_PASS` | simulation, trade-capture, validation | AWS Secrets Manager |
+| `RABBITMQ_USERNAME` | RabbitMQ username | `pms/dev/rabbitmq:RABBITMQ_USERNAME` | simulation, trade-capture | AWS Secrets Manager |
+| `RABBITMQ_PASSWORD` | RabbitMQ password | `pms/dev/rabbitmq:RABBITMQ_PASSWORD` | simulation, trade-capture | AWS Secrets Manager |
 | `KAFKA_ADMIN_PASSWORD` | Kafka admin password | `pms/dev/kafka:KAFKA_ADMIN_PASSWORD` | infrastructure | AWS Secrets Manager |
 | `KAFKA_USER_PASSWORD` | Kafka user password | `pms/dev/kafka:KAFKA_USER_PASSWORD` | infrastructure | AWS Secrets Manager |
 | `REDIS_PASSWORD` | Redis password | `pms/dev/redis:REDIS_PASSWORD` | apigateway, validation | AWS Secrets Manager |
 | `SCHEMA_REGISTRY_API_KEY` | Schema Registry API key | `pms/dev/schema-registry:SCHEMA_REGISTRY_API_KEY` | infrastructure | AWS Secrets Manager |
 | `SCHEMA_REGISTRY_API_SECRET` | Schema Registry API secret | `pms/dev/schema-registry:SCHEMA_REGISTRY_API_SECRET` | infrastructure | AWS Secrets Manager |
+
+---
+
+## 🔒 SERVICE_SECRET
+
+Service-specific secrets unique to each service.
+
+| Variable | Description | AWS Key Path | Service | Source |
+|----------|-------------|--------------|---------|--------|
+| `AUTH_JWT_SECRET` | JWT signing secret for auth service | `pms/dev/auth:AUTH_JWT_SECRET` | auth | AWS Secrets Manager |
+| `SIMULATION_API_KEY` | External API key for simulation service | `pms/dev/simulation:SIMULATION_API_KEY` | simulation | AWS Secrets Manager |
+| `SIMULATION_JWT_SECRET` | JWT signing secret for simulation service | `pms/dev/simulation:SIMULATION_JWT_SECRET` | simulation | AWS Secrets Manager |
+| `TRADE_CAPTURE_API_KEY` | External API key for trade-capture service | `pms/dev/trade-capture:TRADE_CAPTURE_API_KEY` | trade-capture | AWS Secrets Manager |
+| `TRADE_CAPTURE_JWT_SECRET` | JWT signing secret for trade-capture service | `pms/dev/trade-capture:TRADE_CAPTURE_JWT_SECRET` | trade-capture | AWS Secrets Manager |
+| `VALIDATION_API_KEY` | External API key for validation service | `pms/dev/validation:VALIDATION_API_KEY` | validation | AWS Secrets Manager |
+| `VALIDATION_JWT_SECRET` | JWT signing secret for validation service | `pms/dev/validation:VALIDATION_JWT_SECRET` | validation | AWS Secrets Manager |
 
 ---
 

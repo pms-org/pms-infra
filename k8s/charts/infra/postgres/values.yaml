@@ -47,7 +47,7 @@ secrets:
   # Refresh interval
   refreshInterval: 1h
 
-  # Secret key mappings
+  # Secret key mappings - map canonical AWS names to postgres-specific names
   data:
     - secretKey: POSTGRES_PASSWORD
-      remoteKey: POSTGRES_PASSWORD
+      remoteKey: DB_PASSWORD

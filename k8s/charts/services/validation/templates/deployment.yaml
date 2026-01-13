@@ -35,8 +35,16 @@ spec:
         ports:
         - containerPort: {{ .Values.service.targetPort }}
         envFrom:
+        # Global config (DB, Redis, RabbitMQ, Kafka, etc.)
+        - configMapRef:
+            name: pms-global-config
+        # Service-specific config
         - configMapRef:
             name: {{ .Values.service.name }}-config
+        # Global secrets (DB_USERNAME, DB_PASSWORD, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, REDIS_PASSWORD)
+        - secretRef:
+            name: pms-global-secrets
+        # Service-specific secrets
         - secretRef:
             name: {{ .Values.service.name }}-secrets
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}

@@ -28,9 +28,17 @@ spec:
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
         envFrom:
+        # Global config (REDIS_HOST, REDIS_PORT, etc.)
+        - configMapRef:
+            name: pms-global-config
+        # Service-specific config
         - configMapRef:
             name: {{ .Values.service.name }}-config
+        # Global secrets (REDIS_PASSWORD)
+        - secretRef:
+            name: pms-global-secrets
         {{- if .Values.secrets.data }}
+        # Service-specific secrets (if any)
         - secretRef:
             name: {{ .Values.service.name }}-secrets
         {{- end }}
