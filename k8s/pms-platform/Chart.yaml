@@ -54,6 +54,11 @@ dependencies:
     version: 0.1.0
     condition: simulation.enabled
 
+  # - name: portfolio
+  #   repository: file://../charts/services/portfolio
+  #   version: 0.1.0
+  #   condition: portfolio.enabled
+
   - name: trade-capture
     repository: file://../charts/services/trade-capture
     version: 0.1.0
@@ -63,3 +68,34 @@ dependencies:
     repository: file://../charts/services/validation
     version: 0.1.0
     condition: validation.enabled
+
+  - name: transactional
+    repository: file://../charts/services/transactional
+    version: 0.1.0
+    condition: transactional.enabled
+
+  - name: analytics
+    repository: file://../charts/services/analytics
+    version: 0.1.0
+    condition: analytics.enabled
+
+  # Disabled services - uncomment when needed
+  # - name: leaderboard
+  #   repository: file://../charts/services/leaderboard
+  #   version: 0.1.0
+  #   condition: leaderboard.enabled
+
+  # - name: crosscutting
+  #   repository: file://../charts/services/crosscutting
+  #   version: 0.1.0
+  #   condition: crosscutting.enabled
+
+  # - name: rttm
+  #   repository: file://../charts/services/rttm
+  #   version: 0.1.0
+  #   condition: rttm.enabled
+
+  # - name: frontend
+  #   repository: file://../charts/services/frontend
+  #   version: 0.1.0
+  #   condition: frontend.enabled

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: rttm
+description: PMS RTTM Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - rttm
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

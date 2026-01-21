@@ -1,0 +1,16 @@
+apiVersion: v2
+name: analytics
+description: PMS Analytics Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - analytics
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

@@ -1,0 +1,16 @@
+apiVersion: v2
+name: portfolio
+description: PMS Portfolio Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - portfolio
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []

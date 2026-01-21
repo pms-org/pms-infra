@@ -5,11 +5,6 @@ metadata:
   namespace: {{ .Values.service.namespace }}
 spec:
   replicas: {{ .Values.deployment.replicas }}
-  strategy:
-    type: {{ .Values.deployment.strategy.type }}
-    rollingUpdate:
-      maxUnavailable: {{ .Values.deployment.strategy.rollingUpdate.maxUnavailable }}
-      maxSurge: {{ .Values.deployment.strategy.rollingUpdate.maxSurge }}
   selector:
     matchLabels:
       app: {{ .Values.service.name }}
@@ -19,7 +14,6 @@ spec:
         app: {{ .Values.service.name }}
     spec:
       initContainers:
-      {{- /* Loop through the dependencies list */}}
       {{- range .Values.deployment.dependencies }}
       {{- if .enabled }}
       - name: wait-for-{{ .name }}
@@ -32,24 +26,26 @@ spec:
       - name: {{ .Values.service.name }}
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
-        ports:
-        - containerPort: {{ .Values.service.targetPort }}
+        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
         envFrom:
-        # Global config (DB, Redis, RabbitMQ, Kafka, etc.)
+        # Global config (REDIS_HOST, REDIS_PORT, etc.)
         - configMapRef:
             name: pms-global-config
         # Service-specific config
         - configMapRef:
             name: {{ .Values.service.name }}-config
-        # Global secrets (DB_USERNAME, DB_PASSWORD, RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
+        # Global secrets (REDIS_PASSWORD)
         - secretRef:
             name: pms-global-secrets
-        # Service-specific secrets
+        {{- if .Values.secrets.data }}
+        # Service-specific secrets (if any)
         - secretRef:
             name: {{ .Values.service.name }}-secrets
-        resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
         {{- if .Values.deployment.healthChecks.enabled }}
-        {{- include "trade-capture.livenessProbe" . | nindent 8 }}
-        {{- include "trade-capture.readinessProbe" . | nindent 8 }}
-        {{- include "trade-capture.startupProbe" . | nindent 8 }}
+        {{- include "leaderboard.livenessProbe" . | nindent 8 }}
+        {{- include "leaderboard.readinessProbe" . | nindent 8 }}
+        {{- include "leaderboard.startupProbe" . | nindent 8 }}
         {{- end }}

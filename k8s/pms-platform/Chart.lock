@@ -32,5 +32,11 @@ dependencies:
 - name: validation
   repository: file://../charts/services/validation
   version: 0.1.0
-digest: sha256:44a9644326eb4897ad86575c874c314ce5584e266de15663158b44d01447f879
-generated: "2026-01-10T19:41:49.798963229Z"
+- name: transactional
+  repository: file://../charts/services/transactional
+  version: 0.1.0
+- name: analytics
+  repository: file://../charts/services/analytics
+  version: 0.1.0
+digest: sha256:5504e6655128e02ce6f2be982fbae062f618f6929b8621f4f24634a5a7a72be3
+generated: "2026-01-20T12:27:46.348880968Z"

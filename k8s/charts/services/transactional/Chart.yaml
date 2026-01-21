@@ -1,0 +1,14 @@
+apiVersion: v2
+name: transactional
+description: PMS Transactional Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - transactional
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team

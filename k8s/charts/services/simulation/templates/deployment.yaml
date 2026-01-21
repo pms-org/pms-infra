@@ -69,28 +69,7 @@ spec:
         ports:
         - containerPort: {{ .Values.service.targetPort }}
         {{- if .Values.deployment.healthChecks.enabled }}
-        livenessProbe:
-          httpGet:
-            path: {{ .Values.deployment.healthChecks.liveness.path }}
-            port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: {{ .Values.deployment.healthChecks.liveness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.deployment.healthChecks.liveness.periodSeconds }}
-          timeoutSeconds: {{ .Values.deployment.healthChecks.liveness.timeoutSeconds }}
-          failureThreshold: {{ .Values.deployment.healthChecks.liveness.failureThreshold }}
-        readinessProbe:
-          httpGet:
-            path: {{ .Values.deployment.healthChecks.readiness.path }}
-            port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: {{ .Values.deployment.healthChecks.readiness.initialDelaySeconds }}
-          periodSeconds: {{ .Values.deployment.healthChecks.readiness.periodSeconds }}
-          timeoutSeconds: {{ .Values.deployment.healthChecks.readiness.timeoutSeconds }}
-          failureThreshold: {{ .Values.deployment.healthChecks.readiness.failureThreshold }}
-        startupProbe:
-          httpGet:
-            path: {{ .Values.deployment.healthChecks.startup.path }}
-            port: {{ .Values.service.targetPort }}
-          initialDelaySeconds: {{ .Values.deployment.healthChecks.startup.initialDelaySeconds }}
-          periodSeconds: {{ .Values.deployment.healthChecks.startup.periodSeconds }}
-          timeoutSeconds: {{ .Values.deployment.healthChecks.startup.timeoutSeconds }}
-          failureThreshold: {{ .Values.deployment.healthChecks.startup.failureThreshold }}
+        {{- include "simulation.livenessProbe" . | nindent 8 }}
+        {{- include "simulation.readinessProbe" . | nindent 8 }}
+        {{- include "simulation.startupProbe" . | nindent 8 }}
         {{- end }}

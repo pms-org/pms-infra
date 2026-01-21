@@ -103,6 +103,7 @@ config:
 
   # Service-specific config
   SERVER_PORT: "8080"
+  DB_DDL_AUTO: "update"
   VALIDATION_CONSUMER_GROUP: validation-consumer-group
   LOGGING_LEVEL: DEBUG
 
