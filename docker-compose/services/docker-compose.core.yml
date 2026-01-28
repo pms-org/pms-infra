@@ -41,6 +41,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Redis
       REDIS_HOST: redis
@@ -109,6 +110,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Redis
       REDIS_HOST: redis
@@ -163,6 +165,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Java Options
       JAVA_OPTS: "-Xms256m -Xmx512m"
@@ -211,6 +214,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Kafka
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092

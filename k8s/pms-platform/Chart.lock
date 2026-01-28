@@ -41,5 +41,14 @@ dependencies:
 - name: analytics
   repository: file://../charts/services/analytics
   version: 0.1.0
-digest: sha256:9982b9ab6401294be157695cb0f0463d2cec7a3a3c57a3522ba6b20092b4d972
-generated: "2026-01-22T10:36:03.432522426Z"
+- name: leaderboard
+  repository: file://../charts/services/leaderboard
+  version: 0.1.0
+- name: rttm
+  repository: file://../charts/services/rttm
+  version: 0.1.0
+- name: frontend
+  repository: file://../charts/services/frontend
+  version: 0.1.0
+digest: sha256:8bdc4340a245d82fbacd87cede4b709e7bd37f90b041f8bc80ab88c1ae174985
+generated: "2026-01-28T18:31:13.065404613Z"

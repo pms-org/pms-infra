@@ -66,7 +66,7 @@ deployment:
       command:
         - sh
         - -c
-        - "until nc -z apigateway 8080; do echo waiting for api-gateway; sleep 2; done"
+        - "until nc -z apigateway 8088; do echo waiting for api-gateway; sleep 2; done"
 
 # Application configuration (non-secret)
 config:

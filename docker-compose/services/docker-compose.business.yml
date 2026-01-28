@@ -43,6 +43,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # RabbitMQ
       RABBITMQ_HOST: rabbitmq
@@ -110,7 +111,10 @@ services:
       DB_NAME: pmsdb
       DB_USERNAME: pms
       DB_PASSWORD: pms
+      DB_DRIVER: org.postgresql.Driver
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       DB_URL: jdbc:postgresql://postgres:5432/pmsdb
 
       # Redis
@@ -189,6 +193,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # RabbitMQ
       RABBITMQ_HOST: rabbitmq
@@ -254,6 +259,7 @@ services:
       DB_USERNAME: pms
       DB_PASSWORD: pms
       DB_URL: jdbc:postgresql://postgres:5432/pmsdb
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Redis
       SPRING_REDIS_HOST: redis

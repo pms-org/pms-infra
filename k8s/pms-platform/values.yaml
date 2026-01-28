@@ -44,22 +44,22 @@ analytics:
     healthChecks:
       enabled: false
 leaderboard:
-  enabled: true
+  enabled: false
   deployment:
     healthChecks:
       enabled: false
 portfolio:
-  enabled: true
+  enabled: false
   deployment:
     healthChecks:
       enabled: false
 rttm:
-  enabled: true
+  enabled: false
   deployment:
     healthChecks:
       enabled: false
 frontend:
-  enabled: true
+  enabled: false
   deployment:
     healthChecks:
       enabled: false
