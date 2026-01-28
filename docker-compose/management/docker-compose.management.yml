@@ -1,0 +1,63 @@
+# =============================================================================
+# PMS Management Tools
+# =============================================================================
+# Kafka UI, PgAdmin for monitoring and management
+#
+# Profile: mgmt
+# Start with: docker compose --profile mgmt up -d
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Kafka UI (Confluent Control Center Alternative)
+  # ---------------------------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: pms-kafka-ui
+    hostname: kafka-ui
+    restart: unless-stopped
+    profiles: ["mgmt", "full"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: pms-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      DYNAMIC_CONFIG_ENABLED: "true"
+    ports:
+      - "9021:8080"
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.50
+
+  # ---------------------------------------------------------------------------
+  # PgAdmin (PostgreSQL Management)
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pms-pgadmin
+    hostname: pgadmin
+    restart: unless-stopped
+    profiles: ["mgmt", "full"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pms.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - ../scripts/pgadmin-servers.json:/pgadmin4/servers.json
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.51
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  pms-network:
+    external: true

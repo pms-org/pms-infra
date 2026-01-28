@@ -1,0 +1,22 @@
+# =============================================================================
+# PMS Organization - Main Docker Compose
+# =============================================================================
+# This is the main orchestration file that includes all modular components
+#
+# Usage:
+#   docker compose up -d                    # Start everything
+#   docker compose --profile infra up -d    # Start infrastructure only
+#   docker compose --profile apps up -d     # Start applications only
+#   docker compose --profile mgmt up -d     # Start management tools only
+# =============================================================================
+
+# Include all modular compose files
+include:
+  - infrastructure/docker-compose.infra.yml
+  - services/docker-compose.core.yml
+  - services/docker-compose.business.yml
+  - services/docker-compose.frontend.yml
+  - management/docker-compose.management.yml
+# Note: Network and volumes are defined as external in child compose files
+# Create network with: docker network create --subnet=172.20.0.0/16 pms-network
+# Create volumes with: docker volume create pms-{postgres,redis,rabbitmq,kafka}-data

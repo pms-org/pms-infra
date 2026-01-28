@@ -1,9 +1,10 @@
 # PMS Infrastructure Repository
 
-A comprehensive GitOps infrastructure repository for the Portfolio Management System (PMS), featuring Kubernetes manifests, ArgoCD applications, and infrastructure automation using Terraform on AWS EKS.
+A comprehensive GitOps infrastructure repository for the Portfolio Management System (PMS), featuring Kubernetes manifests, ArgoCD applications, infrastructure automation using Terraform on AWS EKS, and local development with Docker Compose.
 
 ## 📖 Documentation
 
+- 🐳 **[Docker Compose Setup](docker-compose/README.md)** - **NEW!** Local development environment
 - 🚀 **[Quick Start Guide](QUICK_START.md)** - Get up and running in 10 minutes
 - 📚 **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete deployment documentation with all commands
 - 🔑 **[Access Information](ACCESS_INFO.md)** - Credentials, endpoints, and troubleshooting commands

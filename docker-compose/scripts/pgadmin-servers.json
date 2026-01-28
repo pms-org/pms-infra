@@ -1,0 +1,17 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "PMS PostgreSQL (Local Docker)",
+      "Group": "PMS Development",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "pmsdb",
+      "Username": "pms",
+      "Password": "pms",
+      "SSLMode": "prefer",
+      "Timeout": 10,
+      "UseSSHTunnel": 0,
+      "Comment": "PMS local Docker environment database"
+    }
+  }
+}

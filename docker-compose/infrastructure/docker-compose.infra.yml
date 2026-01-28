@@ -1,0 +1,240 @@
+# =============================================================================
+# PMS Infrastructure Services
+# =============================================================================
+# PostgreSQL, Redis, RabbitMQ, Kafka, Zookeeper, Schema Registry
+#
+# Profile: infra
+# Start with: docker compose --profile infra up -d
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16
+    container_name: pms-postgres
+    hostname: postgres
+    restart: unless-stopped
+    profiles: ["infra", "full"]
+    environment:
+      POSTGRES_USER: pms
+      POSTGRES_PASSWORD: pms
+      POSTGRES_DB: pmsdb
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.utf8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.10
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pms -d pmsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: pms-redis
+    hostname: redis
+    restart: unless-stopped
+    profiles: ["infra", "full"]
+    command: redis-server --requirepass redis --appendonly yes
+    environment:
+      REDIS_PASSWORD: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.11
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # RabbitMQ with Stream Plugin
+  # ---------------------------------------------------------------------------
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: pms-rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    profiles: ["infra", "full"]
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbit-user
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648"
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Management UI
+      - "5552:5552" # Stream
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.12
+    command: >
+      bash -c "
+        rabbitmq-plugins enable rabbitmq_stream rabbitmq_stream_management &&
+        rabbitmq-server
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ---------------------------------------------------------------------------
+  # Kafka Broker (KRaft Mode - No Zookeeper)
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: pms-kafka
+    hostname: kafka
+    restart: unless-stopped
+    profiles: ["infra", "full"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: ERROR
+      CLUSTER_ID: dOFfvAcdQZKE60Enfcsefg
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.14
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # Schema Registry
+  # ---------------------------------------------------------------------------
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: pms-schema-registry
+    hostname: schema-registry
+    restart: unless-stopped
+    profiles: ["infra", "full"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: WARN
+    ports:
+      - "8081:8081"
+    networks:
+      pms-network:
+        ipv4_address: 172.20.0.15
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/subjects || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Kafka Topics Initializer
+  # ---------------------------------------------------------------------------
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: pms-kafka-init
+    profiles: ["infra", "full"]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "Creating Kafka topics..."
+
+        # Trade Capture Topics
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic trade.captured --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic trade.validated --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic trade.rejected --partitions 6 --replication-factor 1
+
+        # Validation Topics
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic validation.events --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic validation.errors --partitions 6 --replication-factor 1
+
+        # RTTM Topics
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rttm.trade.events --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rttm.queue.metrics --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rttm.error.events --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rttm.dlq.events --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rttm.service.heartbeat --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic rttm.alert.events --partitions 6 --replication-factor 1
+
+        # Simulation Topics
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic simulation.events --partitions 6 --replication-factor 1
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic simulation.trades --partitions 6 --replication-factor 1
+
+        # Analytics Topics
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic analytics.events --partitions 6 --replication-factor 1
+
+        # Leaderboard Topics
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic leaderboard.updates --partitions 8 --replication-factor 1
+
+        echo "All Kafka topics created successfully!"
+    networks:
+      - pms-network
+
+networks:
+  pms-network:
+    external: true
+
+volumes:
+  postgres-data:
+    name: pms-postgres-data
+    external: true
+  redis-data:
+    name: pms-redis-data
+    external: true
+  rabbitmq-data:
+    name: pms-rabbitmq-data
+    external: true
+  kafka-data:
+    name: pms-kafka-data
+    external: true
