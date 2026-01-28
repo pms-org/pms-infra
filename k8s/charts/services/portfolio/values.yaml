@@ -1,0 +1,82 @@
+# Default values for portfolio service
+# This chart deploys the PMS Portfolio ID Generator microservice
+
+# Service configuration
+service:
+  name: portfolio
+  namespace: pms
+  port: 8095
+  targetPort: 8095
+  type: ClusterIP
+
+# Deployment configuration
+deployment:
+  replicas: 1
+  image:
+    repository: niishantdev/pms-portfolio
+    tag: latest
+    pullPolicy: Always
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Health check probes
+  healthChecks:
+    enabled: true
+    liveness:
+      path: /actuator/health
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readiness:
+      path: /actuator/health
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+    startup:
+      path: /actuator/health
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 30
+
+  # Generic wait image for init containers
+  waitImage: &waitImage "busybox:1.36"
+
+  # Dependencies list - data-driven approach for init containers
+  dependencies:
+    - name: postgres
+      enabled: true
+      image: *waitImage
+      command:
+        - sh
+        - -c
+        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+
+# Application configuration (non-secret)
+config:
+  # Note: DB_HOST, DB_PORT, DB_NAME come from global config in pms-platform
+
+  # Database configuration
+  DB_DDL_AUTO: "validate"
+  DB_SHOW_SQL: "false"
+
+  # Service-specific config
+  SERVER_PORT: "8095"
+  SPRING_PROFILES_ACTIVE: "prod"
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_COM_EXAMPLE_PORTFOLIOID_GENERATOR: "DEBUG"
+
+# Secrets configuration (AWS Secrets Manager)
+# Portfolio service doesn't need specific secrets - uses global DB credentials
+secrets:
+  # Leave empty - service uses global pms-global-secrets for DB credentials
+  data: []

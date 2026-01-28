@@ -34,6 +34,19 @@ spec:
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.targetPort }}
+        env:
+        # Spring Boot Redis Sentinel configuration (maps to spring.data.redis.sentinel.*)
+        - name: SPRING_DATA_REDIS_SENTINEL_MASTER
+          value: {{ .Values.global.config.REDIS_SENTINEL_MASTER | quote }}
+        - name: SPRING_DATA_REDIS_SENTINEL_NODES
+          value: "{{ .Values.global.config.REDIS_SENTINEL_HOST }}:{{ .Values.global.config.REDIS_SENTINEL_PORT }}"
+        - name: SPRING_DATA_REDIS_TIMEOUT
+          value: {{ .Values.global.config.REDIS_TIMEOUT | quote }}
+        - name: SPRING_DATA_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pms-global-secrets
+              key: REDIS_PASSWORD
         envFrom:
         # Global config (DB, Redis, RabbitMQ, Kafka, etc.)
         - configMapRef:

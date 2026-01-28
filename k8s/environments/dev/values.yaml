@@ -6,8 +6,8 @@ global:
   environment: dev
   aws:
     region: us-east-1
-    accountId: "123456789012"  # Replace with actual AWS account ID
-    clusterName: "pms-dev-cluster"  # Replace with actual EKS cluster name
+    accountId: "123456789012" # Replace with actual AWS account ID
+    clusterName: "pms-dev-cluster" # Replace with actual EKS cluster name
 
 # External Secrets Operator configuration
 external-secrets:

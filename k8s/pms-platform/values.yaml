@@ -44,27 +44,22 @@ analytics:
     healthChecks:
       enabled: false
 leaderboard:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
       enabled: false
 portfolio:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
       enabled: false
 rttm:
-  enabled: false
-  deployment:
-    healthChecks:
-      enabled: false
-crosscutting:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
       enabled: false
 frontend:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
       enabled: false
@@ -87,9 +82,12 @@ global:
     DB_FORMAT_SQL: "true"
     JPA_OPEN_IN_VIEW: "false"
 
-    # Redis
+    # Redis with Sentinel
     REDIS_HOST: redis
     REDIS_PORT: "6379"
+    REDIS_SENTINEL_HOST: redis-sentinel
+    REDIS_SENTINEL_PORT: "26379"
+    REDIS_SENTINEL_MASTER: pms-redis
     REDIS_TIMEOUT: 2s
     CACHE_TYPE: redis
 
@@ -111,6 +109,8 @@ global:
     AUTH_SERVICE_PORT: "8081"
     SIMULATION_SERVICE_HOST: pms-simulation
     SIMULATION_SERVICE_PORT: "8090"
+    PORTFOLIO_SERVICE_HOST: portfolio
+    PORTFOLIO_SERVICE_PORT: "8095"
     TRADE_CAPTURE_SERVICE_HOST: trade-capture
     TRADE_CAPTURE_SERVICE_PORT: "8082"
     VALIDATION_SERVICE_HOST: validation-service

@@ -27,6 +27,19 @@ spec:
         image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
+        env:
+        # Spring Boot Redis Sentinel configuration (maps to spring.data.redis.sentinel.*)
+        - name: SPRING_DATA_REDIS_SENTINEL_MASTER
+          value: {{ .Values.global.config.REDIS_SENTINEL_MASTER | quote }}
+        - name: SPRING_DATA_REDIS_SENTINEL_NODES
+          value: "{{ .Values.global.config.REDIS_SENTINEL_HOST }}:{{ .Values.global.config.REDIS_SENTINEL_PORT }}"
+        - name: SPRING_DATA_REDIS_TIMEOUT
+          value: {{ .Values.config.ANALYTICS_REDIS_TIMEOUT | quote }}
+        - name: SPRING_DATA_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pms-global-secrets
+              key: REDIS_PASSWORD
         envFrom:
         # Global config (REDIS_HOST, REDIS_PORT, etc.)
         - configMapRef:

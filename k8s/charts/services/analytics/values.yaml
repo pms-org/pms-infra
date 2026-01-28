@@ -98,15 +98,56 @@ config:
   DB_SHOW_SQL: "false"
 
   # Service-specific config
+  # Redis Sentinel configuration
+  # Spring Boot expects SPRING_DATA_REDIS_* environment variables
+  # which automatically map to spring.data.redis.* properties
+  # These are populated from global.config values in the deployment template
+  ANALYTICS_REDIS_TIMEOUT: "10s"
+  ANALYTICS_REDIS_SHUTDOWN_TIMEOUT: "2s"
   ANALYTICS_SERVER_PORT: "8086"
-  SPRING_PROFILES_ACTIVE: "prod"
+  ANALYTICS_PROFILES_ACTIVE: "prod"
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_LEVEL_COM_PMS: "DEBUG"
 
   # Kafka configuration
   ANALYTICS_KAFKA_CONSUMER_GROUP_ID: "analytics-group"
   ANALYTICS_KAFKA_CONSUMER_ENABLE_AUTO_COMMIT: "false"
-  ANALYTICS_KAFKA_TOPIC: "transactional-trades-topic"
+  ANALYTICS_KAFKA_CONSUMER_TOPIC: "transactional-trades-topic"
+  ANALYTICS_KAFKA_PRODUCER_TOPIC: "analytics-trades-topic"
+  ANALYTICS_KAFKA_SEND_TIMEOUT_MS: "60000"
+
+  # Finnhub API configuration
+  FINNHUB_API_BASE_URL: "https://finnhub.io/api/v1"
+
+  # App-specific Redis keys
+  ANALYTICS_REDIS_PRICE_KEY: "stock:prices"
+  ANALYTICS_REDIS_TRANSACTION_KEY: "transactions"
+
+  # Scheduler configuration
+  ANALYTICS_PORTFOLIO_VALUE_CRON: "0 0 * * * *"
+  ANALYTICS_PORTFOLIO_VALUE_TIMEZONE: "UTC"
+  ANALYTICS_PRICE_REFRESH_DELAY_MS: "300000"
+
+  # Outbox configuration
+  ANALYTICS_OUTBOX_SYSTEM_FAILURE_DELAY_MS: "10000"
+  ANALYTICS_OUTBOX_EMPTY_DELAY_MS: "5000"
+  ANALYTICS_OUTBOX_EXCEPTION_DELAY_MS: "30000"
+  ANALYTICS_OUTBOX_RETRY_ATTEMPTS: "3"
+
+  # Database health check
+  ANALYTICS_DB_HEALTH_CHECK_RETRY_MS: "5000"
+
+  # Risk calculation
+  ANALYTICS_RISK_DECIMAL_SCALE: "4"
+  ANALYTICS_RISK_MATH_PRECISION: "32"
+
+  # WebSocket topics
+  ANALYTICS_WS_TOPIC_POSITION_UPDATE: "/topic/position-update"
+  ANALYTICS_WS_TOPIC_UNREALIZED_PNL: "/topic/unrealized-pnl"
+
+  # CORS configuration
+  ANALYTICS_CORS_ALLOWED_ORIGINS: "http://localhost:4200"
+  ANALYTICS_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  serviceName: {{ .Values.service.name }}-headless
+  replicas: {{ .Values.redis.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      containers:
+      - name: redis
+        image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.targetPort }}
+          name: redis
+        command:
+        - sh
+        - -c
+        - |
+          set -ex
+          # Determine if this is the first pod (master candidate)
+          # Pod 0 will be the initial master, Sentinel will manage failover
+          HOSTNAME=$(hostname)
+          ORDINAL=${HOSTNAME##*-}
+          
+          if [ "$ORDINAL" = "0" ]; then
+            # First pod - start as master
+            exec redis-server \
+              --bind 0.0.0.0 \
+              --port {{ .Values.service.targetPort }} \
+              --requirepass ${REDIS_PASSWORD} \
+              --masterauth ${REDIS_PASSWORD} \
+              --maxmemory {{ .Values.redis.config.maxmemory }} \
+              --maxmemory-policy {{ .Values.redis.config.maxmemoryPolicy }} \
+              --appendonly {{ .Values.redis.config.appendonly }} \
+              --appendfsync {{ .Values.redis.config.appendfsync }} \
+              --save {{ .Values.redis.config.savePolicy }} \
+              --dir /data
+          else
+            # Other pods - start as replicas of pod-0
+            exec redis-server \
+              --bind 0.0.0.0 \
+              --port {{ .Values.service.targetPort }} \
+              --requirepass ${REDIS_PASSWORD} \
+              --masterauth ${REDIS_PASSWORD} \
+              --replicaof {{ .Values.service.name }}-0.{{ .Values.service.name }}-headless {{ .Values.service.targetPort }} \
+              --maxmemory {{ .Values.redis.config.maxmemory }} \
+              --maxmemory-policy {{ .Values.redis.config.maxmemoryPolicy }} \
+              --appendonly {{ .Values.redis.config.appendonly }} \
+              --appendfsync {{ .Values.redis.config.appendfsync }} \
+              --save {{ .Values.redis.config.savePolicy }} \
+              --dir /data
+          fi
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.service.name }}-secrets
+              key: REDIS_PASSWORD
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        resources: {{ toYaml .Values.redis.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - redis-cli -a ${REDIS_PASSWORD} ping | grep PONG
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - redis-cli -a ${REDIS_PASSWORD} ping | grep PONG
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  {{- if .Values.redis.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.redis.persistence.storageClass }}
+      resources:
+        requests:
+          storage: {{ .Values.redis.persistence.size }}
+  {{- else }}
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  {{- end }}

@@ -44,6 +44,15 @@ module "eks" {
       desired_size   = var.node_desired_size
       min_size       = var.node_min_size
       max_size       = var.node_max_size
+      
+      # Force recreation when instance type changes
+      force_update_version = true
+      update_config = {
+        max_unavailable_percentage = 33
+      }
+      
+      # Use create_before_destroy for zero-downtime upgrades
+      use_name_prefix = true
     }
   }
 

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.sentinel.name }}
+  labels:
+    app: {{ .Values.sentinel.name }}
+spec:
+  serviceName: {{ .Values.sentinel.name }}-headless
+  replicas: {{ .Values.sentinel.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.sentinel.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.sentinel.name }}
+    spec:
+      containers:
+      - name: sentinel
+        image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+        imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.sentinel.port }}
+          name: sentinel
+        command:
+        - sh
+        - -c
+        - |
+          set -ex
+          # Create sentinel configuration
+          cat > /tmp/sentinel.conf <<EOF
+          port {{ .Values.sentinel.port }}
+          dir /tmp
+          sentinel monitor {{ .Values.sentinel.masterName }} {{ .Values.service.name }}-0.{{ .Values.service.name }}-headless {{ .Values.service.targetPort }} {{ .Values.sentinel.quorum }}
+          sentinel auth-pass {{ .Values.sentinel.masterName }} ${REDIS_PASSWORD}
+          sentinel down-after-milliseconds {{ .Values.sentinel.masterName }} {{ .Values.sentinel.downAfterMilliseconds }}
+          sentinel failover-timeout {{ .Values.sentinel.masterName }} {{ .Values.sentinel.failoverTimeout }}
+          sentinel parallel-syncs {{ .Values.sentinel.masterName }} {{ .Values.sentinel.parallelSyncs }}
+          sentinel resolve-hostnames yes
+          sentinel announce-hostnames yes
+          EOF
+          
+          exec redis-sentinel /tmp/sentinel.conf
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.service.name }}-secrets
+              key: REDIS_PASSWORD
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - redis-cli -p {{ .Values.sentinel.port }} ping | grep PONG
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - redis-cli -p {{ .Values.sentinel.port }} ping | grep PONG
+          initialDelaySeconds: 5
+          periodSeconds: 5

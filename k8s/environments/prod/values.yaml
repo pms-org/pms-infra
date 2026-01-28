@@ -6,8 +6,8 @@ global:
   environment: prod
   aws:
     region: us-east-1
-    accountId: "123456789012"  # Replace with actual AWS account ID
-    clusterName: "pms-prod-cluster"  # Replace with actual EKS cluster name
+    accountId: "123456789012" # Replace with actual AWS account ID
+    clusterName: "pms-prod-cluster" # Replace with actual EKS cluster name
 
 # External Secrets Operator configuration
 external-secrets:
@@ -20,7 +20,7 @@ external-secrets:
 # Service-specific overrides with production settings
 simulation:
   deployment:
-    replicas: 3  # Higher availability in production
+    replicas: 3 # Higher availability in production
     resources:
       requests:
         cpu: 200m
@@ -33,7 +33,7 @@ simulation:
 
 trade-capture:
   deployment:
-    replicas: 3  # Higher availability in production
+    replicas: 3 # Higher availability in production
     resources:
       requests:
         cpu: 500m
@@ -46,7 +46,7 @@ trade-capture:
 
 validation:
   deployment:
-    replicas: 2  # Moderate scaling for validation
+    replicas: 2 # Moderate scaling for validation
     resources:
       requests:
         cpu: 200m

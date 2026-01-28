@@ -1,20 +1,30 @@
 # Default values for redis chart
-# This chart deploys Redis with AI and search modules
+# This chart deploys Redis with Sentinel for high availability
 
 # Service configuration
 service:
   name: redis
-  namespace: pms
   port: 6379
   targetPort: 6379
   type: ClusterIP
 
-# Deployment configuration
-deployment:
-  replicas: 1
+# Sentinel configuration
+sentinel:
+  name: redis-sentinel
+  port: 26379
+  replicas: 3
+  masterName: pms-redis
+  quorum: 2
+  downAfterMilliseconds: 5000
+  failoverTimeout: 10000
+  parallelSyncs: 1
+
+# Redis Master/Replica configuration
+redis:
+  replicas: 3 # 1 master + 2 replicas (master elected automatically)
   image:
-    repository: redislabs/redismod
-    tag: "latest"
+    repository: redis
+    tag: "7.2-alpine"
     pullPolicy: IfNotPresent
 
   # Resource limits and requests
@@ -24,31 +34,21 @@ deployment:
       memory: 256Mi
     limits:
       cpu: 500m
-      memory: 1Gi
+      memory: 512Mi
 
-  # Redis command with modules
-  command:
-    - redis-server
-  args:
-    - --loadmodule
-    - /usr/lib/redis/modules/redisai.so
-    - ONNX
-    - redisai_onnxruntime/redisai_onnxruntime.so
-    - TF
-    - redisai_tensorflow/redisai_tensorflow.so
-    - TFLITE
-    - redisai_tflite/redisai_tflite.so
-    - TORCH
-    - redisai_torch/redisai_torch.so
-    - --loadmodule
-    - /usr/lib/redis/modules/redisearch.so
-    - --loadmodule
-    - /usr/lib/redis/modules/redisgraph.so
-    - --loadmodule
-    - /usr/lib/redis/modules/redistimeseries.so
+  # Persistence
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: "gp3"
 
-# Redis configuration (non-secret)
-config: {}
+  # General Redis settings (NOT cluster mode)
+  config:
+    maxmemory: "256mb"
+    maxmemoryPolicy: "allkeys-lru"
+    appendonly: "yes"
+    appendfsync: "everysec"
+    savePolicy: "900 1 300 10 60 10000"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

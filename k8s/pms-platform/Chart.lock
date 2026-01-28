@@ -26,6 +26,9 @@ dependencies:
 - name: simulation
   repository: file://../charts/services/simulation
   version: 0.1.0
+- name: portfolio
+  repository: file://../charts/services/portfolio
+  version: 0.1.0
 - name: trade-capture
   repository: file://../charts/services/trade-capture
   version: 0.1.0
@@ -38,5 +41,5 @@ dependencies:
 - name: analytics
   repository: file://../charts/services/analytics
   version: 0.1.0
-digest: sha256:5504e6655128e02ce6f2be982fbae062f618f6929b8621f4f24634a5a7a72be3
-generated: "2026-01-20T12:27:46.348880968Z"
+digest: sha256:9982b9ab6401294be157695cb0f0463d2cec7a3a3c57a3522ba6b20092b4d972
+generated: "2026-01-22T10:36:03.432522426Z"

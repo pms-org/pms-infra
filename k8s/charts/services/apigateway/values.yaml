@@ -5,8 +5,8 @@
 service:
   name: apigateway
   namespace: pms
-  port: 8080
-  targetPort: 8080
+  port: 8088
+  targetPort: 8088
   type: ClusterIP
 
 # Deployment configuration
@@ -68,7 +68,7 @@ config:
   # All come from global config in pms-platform
 
   # Service-specific config
-  SERVER_PORT: "8080"
+  SERVER_PORT: "8088"
   GATEWAY_CONNECT_TIMEOUT: "3000"
   GATEWAY_RESPONSE_TIMEOUT: "10s"
   GATEWAY_CORS_ORIGINS: "*"

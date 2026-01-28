@@ -1,12 +1,63 @@
+# Headless service for Redis StatefulSet pod identity
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.Values.service.name }}
-  namespace: {{.Values.service.namespace }}
+  name: {{ .Values.service.name }}-headless
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  clusterIP: None
+  selector:
+    app: {{ .Values.service.name }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.targetPort }}
+    name: redis
+---
+# Client service for Redis access (points to current master via Sentinel)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ .Values.service.name }}
 spec:
   selector:
-    app: {{.Values.service.name }}
+    app: {{ .Values.service.name }}
   ports:
-    - port: {{.Values.service.port }}
-      targetPort: {{.Values.service.targetPort }}
-  type: {{.Values.service.type }}
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.targetPort }}
+    name: redis
+  type: {{ .Values.service.type }}
+---
+# Headless service for Sentinel StatefulSet pod identity
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.sentinel.name }}-headless
+  labels:
+    app: {{ .Values.sentinel.name }}
+spec:
+  clusterIP: None
+  selector:
+    app: {{ .Values.sentinel.name }}
+  ports:
+  - port: {{ .Values.sentinel.port }}
+    targetPort: {{ .Values.sentinel.port }}
+    name: sentinel
+---
+# Client service for Sentinel access
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.sentinel.name }}
+  labels:
+    app: {{ .Values.sentinel.name }}
+spec:
+  selector:
+    app: {{ .Values.sentinel.name }}
+  ports:
+  - port: {{ .Values.sentinel.port }}
+    targetPort: {{ .Values.sentinel.port }}
+    name: sentinel
+  type: ClusterIP
