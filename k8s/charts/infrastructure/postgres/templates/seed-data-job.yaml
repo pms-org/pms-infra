@@ -1,0 +1,75 @@
+{{- if .Values.seedData.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "postgres.fullname" . }}-seed-data
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "postgres.labels" . | nindent 4 }}
+    app.kubernetes.io/component: seed-data
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "postgres.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: seed-data
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: seed-data
+        image: postgres:16.11-alpine
+        env:
+        - name: PGHOST
+          value: {{ .Values.service.name }}
+        - name: PGPORT
+          value: "{{ .Values.service.port }}"
+        - name: PGDATABASE
+          value: {{ .Values.config.POSTGRES_DB }}
+        - name: PGUSER
+          value: {{ .Values.config.POSTGRES_USER }}
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "postgres.fullname" . }}-secret
+              key: POSTGRES_PASSWORD
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready -h $PGHOST -p $PGPORT -U $PGUSER; do
+            echo "PostgreSQL is unavailable - sleeping"
+            sleep 2
+          done
+          
+          echo "PostgreSQL is ready - seeding reference data..."
+          
+          psql <<-EOSQL
+            -- Seed portfolio_investor_details
+            INSERT INTO portfolio_investor_details (portfolio_id, name, phone_number, address) VALUES
+            {{- range $index, $portfolio := .Values.seedData.portfolios }}
+            ('{{ $portfolio.id }}', '{{ $portfolio.name }}', {{ $portfolio.phone }}, '{{ $portfolio.address }}'){{ if ne $index (sub (len $.Values.seedData.portfolios) 1) }},{{ end }}
+            {{- end }}
+            ON CONFLICT (portfolio_id) DO NOTHING;
+            
+            -- Seed pms_stocks
+            INSERT INTO pms_stocks (symbol, sector_name, created_at, updated_at) VALUES
+            {{- range $index, $stock := .Values.seedData.stocks }}
+            ('{{ $stock.symbol }}', '{{ $stock.sector }}', now(), now()){{ if ne $index (sub (len $.Values.seedData.stocks) 1) }},{{ end }}
+            {{- end }}
+            ON CONFLICT (symbol) DO NOTHING;
+            
+            -- Display results
+            SELECT COUNT(*) as portfolio_count FROM portfolio_investor_details;
+            SELECT COUNT(*) as stock_count FROM pms_stocks;
+          EOSQL
+          
+          echo "Reference data seeding completed successfully!"
+{{- end }}

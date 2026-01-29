@@ -104,6 +104,8 @@ config:
   # These are populated from global.config values in the deployment template
   ANALYTICS_REDIS_TIMEOUT: "10000" # milliseconds (10s)
   ANALYTICS_REDIS_SHUTDOWN_TIMEOUT: "2000" # milliseconds (2s)
+  ANALYTICS_REDIS_SENTINEL_MASTER: "pms-redis"
+  ANALYTICS_REDIS_SENTINEL_NODES: "redis-sentinel:26379"
   ANALYTICS_SERVER_PORT: "8086"
   ANALYTICS_PROFILES_ACTIVE: "prod"
   LOGGING_LEVEL_ROOT: "INFO"
@@ -124,22 +126,22 @@ config:
   ANALYTICS_REDIS_TRANSACTION_KEY: "transactions"
 
   # Scheduler configuration
-  ANALYTICS_PORTFOLIO_VALUE_CRON: "0 0 * * * *"
-  ANALYTICS_PORTFOLIO_VALUE_TIMEZONE: "UTC"
-  ANALYTICS_PRICE_REFRESH_DELAY_MS: "300000"
+  ANALYTICS_PORTFOLIO_VALUE_CRON: "0 59 23 * * ?" # Daily at 23:59 (app.properties value)
+  ANALYTICS_PORTFOLIO_VALUE_TIMEZONE: "Asia/Kolkata" # Changed from UTC to match app.properties
+  ANALYTICS_PRICE_REFRESH_DELAY_MS: "30000" # 30 seconds (was 3000ms)
 
   # Outbox configuration
-  ANALYTICS_OUTBOX_SYSTEM_FAILURE_DELAY_MS: "10000"
+  ANALYTICS_OUTBOX_SYSTEM_FAILURE_DELAY_MS: "2000" # Changed from 10000 to match app.properties
   ANALYTICS_OUTBOX_EMPTY_DELAY_MS: "5000"
-  ANALYTICS_OUTBOX_EXCEPTION_DELAY_MS: "30000"
+  ANALYTICS_OUTBOX_EXCEPTION_DELAY_MS: "1000" # Changed from 30000 to match app.properties
   ANALYTICS_OUTBOX_RETRY_ATTEMPTS: "3"
 
   # Database health check
   ANALYTICS_DB_HEALTH_CHECK_RETRY_MS: "5000"
 
   # Risk calculation
-  ANALYTICS_RISK_DECIMAL_SCALE: "4"
-  ANALYTICS_RISK_MATH_PRECISION: "32"
+  ANALYTICS_RISK_DECIMAL_SCALE: "8" # Changed from 4 to match app.properties
+  ANALYTICS_RISK_MATH_PRECISION: "10" # Changed from 32 to match app.properties
 
   # WebSocket topics
   ANALYTICS_WS_TOPIC_POSITION_UPDATE: "/topic/position-update"
