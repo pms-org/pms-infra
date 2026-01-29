@@ -73,11 +73,11 @@ deployment:
       command:
         - sh
         - -c
-        - "until nc -z kafka 9092; do echo waiting for kafka; sleep 2; done"
+        - "until nc -z kafka 19092; do echo waiting for kafka; sleep 2; done"
 
 # Application configuration (non-secret)
 config:
-  # Note: DB_HOST, DB_PORT, DB_NAME come from global config in pms-platform
+  # Note: DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD come from global secrets/config
 
   # Database configuration
   DB_DDL_AUTO: "update"
@@ -85,7 +85,7 @@ config:
 
   # Service-specific config
   SERVER_PORT: "8000"
-  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_PROFILES_ACTIVE: "docker"
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_LEVEL_COM_PMS_LEADERBOARD: "DEBUG"
 
@@ -98,7 +98,9 @@ config:
   KAFKA_CONSUMER_AUTO_OFFSET_RESET: "earliest"
   KAFKA_RISK_TOPIC: "portfolio-risk-metrics"
 
-  # Redis Sentinel configuration
+  # Redis Sentinel configuration - matches application-docker.yaml expectations
+  # Application expects: REDIS_HOST for sentinel master name, REDIS_SENTINEL_NODES for nodes
+  # These values are set from global config in deployment template
   REDIS_HOST: "pms-redis"
   REDIS_SENTINEL_NODES: "redis-sentinel:26379"
   REDIS_READ_FROM: "REPLICA_PREFERRED"
@@ -108,12 +110,11 @@ config:
 # Leaderboard service uses global secrets (DB_USERNAME, DB_PASSWORD, REDIS_PASSWORD)
 # from pms-global-secrets created by the pms-platform umbrella chart
 secrets:
-  enabled: false # Set to true if service-specific secrets are needed
+  enabled: true
   refreshInterval: 1h
-  path: "pms/dev/leaderboard" # AWS Secrets Manager path (if enabled)
-  data: []
-  # Example service-specific secrets (if needed):
-  # - secretKey: LEADERBOARD_API_KEY
-  #   remoteKey: api_key
-  # - secretKey: EXTERNAL_SERVICE_TOKEN
-  #   remoteKey: service_token
+  path: "pms/dev/leaderboard"
+  data:
+    - secretKey: LEADERBOARD_API_KEY
+      remoteKey: LEADERBOARD_API_KEY
+    - secretKey: LEADERBOARD_JWT_SECRET
+      remoteKey: LEADERBOARD_JWT_SECRET

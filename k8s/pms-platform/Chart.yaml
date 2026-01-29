@@ -32,6 +32,11 @@ dependencies:
     version: 0.1.0
     condition: schemaRegistry.enabled
 
+  - name: seed-data
+    repository: file://../charts/infra/seed-data
+    version: 0.1.0
+    condition: seedData.enabled
+
   # Platform
   - name: external-secrets
     repository: file://../charts/platform/external-secrets

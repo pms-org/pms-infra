@@ -13,6 +13,8 @@ schemaRegistry:
   enabled: true
 externalSecrets:
   enabled: false
+seedData:
+  enabled: false
 
 apigateway:
   enabled: true
@@ -47,22 +49,49 @@ leaderboard:
   enabled: true
   deployment:
     healthChecks:
-      enabled: true
+      enabled: false
 portfolio:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
       enabled: false
 rttm:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
       enabled: false
 frontend:
-  enabled: false
+  enabled: true
+  service:
+    type: LoadBalancer
   deployment:
     healthChecks:
       enabled: false
+  # Runtime configuration for frontend
+  # Override these values per environment using k8s/environments/{env}/values.yaml
+  runtimeConfig:
+    # API Gateway (primary entry point)
+    API_GATEWAY_HTTP: "http://apigateway:8088"
+    API_GATEWAY_WS: "ws://apigateway:8088"
+
+    # Auth Service
+    AUTH_HTTP: "http://auth:8081"
+
+    # Portfolio Service
+    PORTFOLIO_HTTP: "http://portfolio:8095"
+    PORTFOLIO_WS: "ws://portfolio:8095"
+
+    # Analytics Service
+    ANALYTICS_HTTP: "http://analytics:8086"
+    ANALYTICS_WS: "ws://analytics:8086"
+
+    # Leaderboard Service
+    LEADERBOARD_HTTP: "http://leaderboard:8000"
+    LEADERBOARD_WS: "ws://leaderboard:8000"
+
+    # RTTM Service
+    RTTM_HTTP: "http://rttm:8087"
+    RTTM_WS: "ws://rttm:8087"
 
 # Optional shared values
 global:

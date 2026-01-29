@@ -42,6 +42,11 @@ spec:
         - secretRef:
             name: {{ .Values.service.name }}-secrets
         {{- end }}
+        # Mount runtime configuration (env.js) into NGINX html directory
+        volumeMounts:
+        - name: env-config
+          mountPath: /usr/share/nginx/html/env.js
+          subPath: env.js
         ports:
         - containerPort: {{ .Values.service.targetPort }}
         {{- if .Values.deployment.healthChecks.enabled }}
@@ -49,3 +54,9 @@ spec:
         {{- include "frontend.readinessProbe" . | nindent 8 }}
         {{- include "frontend.startupProbe" . | nindent 8 }}
         {{- end }}
+      # Volume definition for runtime configuration
+      volumes:
+      - name: env-config
+        configMap:
+          name: {{ .Values.service.name }}-env-config
+

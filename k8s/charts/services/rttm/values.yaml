@@ -77,19 +77,32 @@ deployment:
 
 # Application configuration (non-secret)
 config:
-  # Note: DB_HOST, DB_PORT, DB_NAME come from global config in pms-platform
+  # Database configuration - RTTM uses DB_URL format
+  DB_URL: "jdbc:postgresql://postgres:5432/pmsdb"
 
-  # Database configuration
+  # Database JPA configuration
   DB_DDL_AUTO: "update"
-  DB_SHOW_SQL: "false"
+  DB_SHOW_SQL: "true"
+
+  # Kafka configuration
+  KAFKA_BOOTSTRAP: "kafka:9092"
+  SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+  KAFKA_CONSUMER_GROUP_ID: "rttm-group"
 
   # Service-specific config
   SERVER_PORT: "8087"
   SPRING_PROFILES_ACTIVE: "prod"
   LOGGING_LEVEL_ROOT: "INFO"
-  LOGGING_LEVEL_COM_DTCC_RTTM: "DEBUG"
+  LOGGING_LEVEL_COM_PMS_RTTM: "DEBUG"
 
-# Secrets configuration (AWS Secrets Manager)
+  # RTTM batching and queue settings
+  RTTM_BATCH_SIZE: "100"
+  RTTM_BATCH_POLL_MS: "2000"
+  RTTM_QUEUE_CAPACITY: "10000"
+  RTTM_CONSUMER_CONCURRENCY: "3"
+  RTTM_FETCH_MAX_WAIT_MS: "3000"
+
+# Secrets configuration (AWS S=ecrets Manager)
 # RTTM service doesn't need specific secrets - uses global DB credentials
 secrets:
   # Leave empty - service uses global pms-global-secrets for DB credentials

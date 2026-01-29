@@ -55,7 +55,7 @@ secrets:
 # Seed data configuration
 # This controls the Helm hook job that populates reference data
 seedData:
-  enabled: true
+  enabled: false
 
   # Portfolio investor details - reference data for validation
   portfolios:

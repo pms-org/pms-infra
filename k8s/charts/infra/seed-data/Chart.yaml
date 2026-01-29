@@ -1,0 +1,5 @@
+apiVersion: v2
+name: seed-data
+description: Database seed data job for PMS platform
+type: application
+version: 0.1.0

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.service.name }}-env-config
+  namespace: {{ .Values.service.namespace }}
+data:
+  env.js: |
+    // Runtime configuration injected by Kubernetes ConfigMap
+    // This file is generated at deployment time and mounted into the NGINX container
+    (function(window) {
+      window.__ENV__ = {
+        {{- range $key, $value := .Values.runtimeConfig }}
+        {{ $key }}: {{ $value | quote }},
+        {{- end }}
+      };
+    })(window);
