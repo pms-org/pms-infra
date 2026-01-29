@@ -102,8 +102,8 @@ config:
   # Spring Boot expects SPRING_DATA_REDIS_* environment variables
   # which automatically map to spring.data.redis.* properties
   # These are populated from global.config values in the deployment template
-  ANALYTICS_REDIS_TIMEOUT: "10s"
-  ANALYTICS_REDIS_SHUTDOWN_TIMEOUT: "2s"
+  ANALYTICS_REDIS_TIMEOUT: "10000" # milliseconds (10s)
+  ANALYTICS_REDIS_SHUTDOWN_TIMEOUT: "2000" # milliseconds (2s)
   ANALYTICS_SERVER_PORT: "8086"
   ANALYTICS_PROFILES_ACTIVE: "prod"
   LOGGING_LEVEL_ROOT: "INFO"
