@@ -28,16 +28,16 @@ spec:
         imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
         resources: {{ toYaml .Values.deployment.resources | nindent 10 }}
         envFrom:
-        # Global config (REDIS_HOST, REDIS_PORT, etc.)
+        # Global config (DB_HOST, DB_PORT, DB_NAME, KAFKA_BOOTSTRAP_SERVERS, etc.)
         - configMapRef:
             name: pms-global-config
-        # Service-specific config
+        # Service-specific config (KAFKA topics, consumer group, etc.)
         - configMapRef:
             name: {{ .Values.service.name }}-config
-        # Global secrets (REDIS_PASSWORD)
+        # Global secrets (DB_USERNAME, DB_PASSWORD, REDIS_PASSWORD)
         - secretRef:
             name: pms-global-secrets
-        {{- if .Values.secrets.data }}
+        {{- if and .Values.secrets.enabled (gt (len .Values.secrets.data) 0) }}
         # Service-specific secrets (if any)
         - secretRef:
             name: {{ .Values.service.name }}-secrets

@@ -105,7 +105,15 @@ config:
   REDIS_TIMEOUT: "10s"
 
 # Secrets configuration (AWS Secrets Manager)
-# Leaderboard service doesn't need specific secrets - uses global DB credentials
+# Leaderboard service uses global secrets (DB_USERNAME, DB_PASSWORD, REDIS_PASSWORD)
+# from pms-global-secrets created by the pms-platform umbrella chart
 secrets:
-  # Leave empty - service uses global pms-global-secrets for DB credentials
+  enabled: false # Set to true if service-specific secrets are needed
+  refreshInterval: 1h
+  path: "pms/dev/leaderboard" # AWS Secrets Manager path (if enabled)
   data: []
+  # Example service-specific secrets (if needed):
+  # - secretKey: LEADERBOARD_API_KEY
+  #   remoteKey: api_key
+  # - secretKey: EXTERNAL_SERVICE_TOKEN
+  #   remoteKey: service_token

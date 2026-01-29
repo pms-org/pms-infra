@@ -44,10 +44,10 @@ analytics:
     healthChecks:
       enabled: false
 leaderboard:
-  enabled: false
+  enabled: true
   deployment:
     healthChecks:
-      enabled: false
+      enabled: true
 portfolio:
   enabled: false
   deployment:
