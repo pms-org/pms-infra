@@ -18,6 +18,11 @@ seedData:
 
 apigateway:
   enabled: true
+  service:
+    type: LoadBalancer
+  deployment:
+    healthChecks:
+      enabled: false
 auth:
   enabled: true
 simulation:
@@ -69,31 +74,24 @@ frontend:
       enabled: false
   # Runtime configuration for frontend
   # Override these values per environment using k8s/environments/{env}/values.yaml
+  # When frontend is accessed externally (browser), use LoadBalancer external URLs
   runtimeConfig:
-    # API Gateway (primary entry point)
-    API_GATEWAY_HTTP: "http://apigateway:8088"
-    API_GATEWAY_WS: "ws://apigateway:8088"
-
-    # Auth Service
-    AUTH_HTTP: "http://auth:8081"
-
-    # Portfolio Service
-    PORTFOLIO_HTTP: "http://portfolio:8095"
-    PORTFOLIO_WS: "ws://portfolio:8095"
-
-    # Analytics Service
-    ANALYTICS_HTTP: "http://analytics:8086"
-    ANALYTICS_WS: "ws://analytics:8086"
-
-    # Leaderboard Service
-    LEADERBOARD_HTTP: "http://leaderboard:8000"
-    LEADERBOARD_WS: "ws://leaderboard:8000"
-
-    # RTTM Service
-    RTTM_HTTP: "http://rttm:8087"
-    RTTM_WS: "ws://rttm:8087"
-
-# Optional shared values
+    # API Gateway - External LoadBalancer URL (accessed from browser)
+    # Update this with your actual API Gateway LoadBalancer hostname
+    API_GATEWAY_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    API_GATEWAY_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    
+    # All services route through API Gateway when accessed from browser
+    # The API Gateway will forward requests to internal services
+    AUTH_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    PORTFOLIO_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    PORTFOLIO_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    ANALYTICS_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    ANALYTICS_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    LEADERBOARD_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    LEADERBOARD_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    RTTM_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+    RTTM_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"# Optional shared values
 global:
   environment: dev
   namespace: pms
