@@ -65,28 +65,30 @@ config:
 #
 # No frontend rebuild or image push required - this is runtime configuration!
 runtimeConfig:
-  # API Gateway (primary entry point)
-  API_GATEWAY_HTTP: "http://apigateway:8088"
-  API_GATEWAY_WS: "ws://apigateway:8088"
+  # API Gateway (primary entry point) - MUST use external LoadBalancer URL
+  # Browser cannot resolve internal Kubernetes service names
+  API_GATEWAY_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  API_GATEWAY_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
 
-  # Auth Service
-  AUTH_HTTP: "http://auth:8081"
+  # All other services route through API Gateway
+  # Frontend should ONLY talk to API Gateway (single entry point pattern)
+  AUTH_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
 
   # Portfolio Service
-  PORTFOLIO_HTTP: "http://portfolio:8095"
-  PORTFOLIO_WS: "ws://portfolio:8095"
+  PORTFOLIO_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  PORTFOLIO_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
 
   # Analytics Service
-  ANALYTICS_HTTP: "http://analytics:8086"
-  ANALYTICS_WS: "ws://analytics:8086"
+  ANALYTICS_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  ANALYTICS_WS: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
 
   # Leaderboard Service
-  LEADERBOARD_HTTP: "http://leaderboard:8000"
-  LEADERBOARD_WS: "ws://leaderboard:8000"
+  LEADERBOARD_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  LEADERBOARD_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
 
   # RTTM Service
-  RTTM_HTTP: "http://rttm:8087"
-  RTTM_WS: "ws://rttm:8087"
+  RTTM_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  RTTM_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:
