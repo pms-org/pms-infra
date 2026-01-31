@@ -1,0 +1,16 @@
+apiVersion: v2
+name: crosscutting
+description: PMS Crosscutting Service
+type: application
+version: 0.1.0
+appVersion: "latest"
+
+keywords:
+  - crosscutting
+  - pms
+  - microservice
+
+maintainers:
+  - name: Platform Team
+
+dependencies: []
