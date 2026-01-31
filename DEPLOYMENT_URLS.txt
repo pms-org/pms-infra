@@ -1,0 +1,108 @@
+╔════════════════════════════════════════════════════════════╗
+║        PMS PLATFORM - PRODUCTION DEPLOYMENT INFO          ║
+╚════════════════════════════════════════════════════════════╝
+
+Deployment Date: 2026-01-30
+Status: ✅ OPERATIONAL
+
+📍 ACCESS URLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Frontend Application:
+  http://a391e234f414d47c8bf54c04acf53719-1442273814.us-east-1.elb.amazonaws.com
+
+API Gateway:
+  http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088
+
+🌐 BACKEND SERVICE ENDPOINTS (via API Gateway)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Analytics:
+  • GET /api/analysis/all
+  • GET /api/sectors/overall
+  • GET /api/sectors/sector-wise/{sector}
+  • GET /api/sectors/portfolio-wise/{portfolioId}
+  • GET /api/portfolio_value/history/{portfolioId}
+  • WS  /ws (STOMP)
+
+Leaderboard:
+  • GET /api/leaderboard/top
+  • GET /api/leaderboard/around?portfolioId={id}
+  • WS  /ws/updates
+
+Portfolio:
+  • GET  /api/portfolio/all
+  • GET  /api/portfolio/{id}
+  • POST /api/portfolio/create
+
+RTTM (Real-Time Trade Monitoring):
+  • GET /api/rttm/metrics
+  • GET /api/rttm/pipeline
+  • GET /api/rttm/telemetry-snapshot
+  • GET /api/rttm/dlq
+  • GET /api/rttm/alerts
+  • WS  /ws/rttm/metrics
+  • WS  /ws/rttm/pipeline
+  • WS  /ws/rttm/telemetry
+
+Auth:
+  • POST /api/auth/login
+  • POST /api/auth/signup
+
+Simulation:
+  • POST /simulation/create-portfolio
+
+📊 SERVICE HEALTH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ apigateway: Running
+✅ analytics: Running
+✅ auth: Running
+✅ frontend: Running
+✅ leaderboard: Running
+✅ portfolio: Running
+✅ rttm: Running
+
+📝 ISSUES RESOLVED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. RTTM Database Schema:
+   - Missing tables created from schema.sql
+   - Tables: rttm_trade_events, rttm_queue_metrics, rttm_dlq_events, etc.
+
+2. RTTM Hibernate Configuration:
+   - Changed ddl-auto from 'validate' to 'update'
+   - Rebuilt and redeployed image
+
+3. Frontend Runtime Configuration:
+   - Properly configured to use API Gateway LoadBalancer
+   - env.js correctly injected via ConfigMap
+
+🛠️ USEFUL COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check service status:
+  kubectl get pods -n pms
+
+View logs:
+  kubectl logs -f deployment/<service-name> -n pms
+
+Restart service:
+  kubectl rollout restart deployment/<service-name> -n pms
+
+Test endpoint:
+  curl http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088/api/analysis/all
+
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Endpoint Reference: docs/ENDPOINTS_REFERENCE.md
+• Frontend Deployment: docs/deployment/FRONTEND_EKS_DEPLOYMENT.md
+• Deployment Checklist: docs/deployment/DEPLOYMENT_CHECKLIST.md
+• Test Script: scripts/test-endpoints.sh
+• Deploy Script: scripts/deploy-frontend.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Last Updated: 2026-01-30
+Platform Status: PRODUCTION READY ✅
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

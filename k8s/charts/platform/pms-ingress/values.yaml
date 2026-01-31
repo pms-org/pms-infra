@@ -1,0 +1,152 @@
+# PMS Platform Ingress Configuration
+#
+# This chart creates a single AWS Application Load Balancer (ALB)
+# that routes traffic to frontend and apigateway services.
+#
+# Architecture:
+#   Internet → ALB → Ingress → {frontend:80, apigateway:8088}
+#
+# Benefits:
+#   - Single public endpoint (no CORS issues)
+#   - HTTPS termination via ACM
+#   - WebSocket support (wss://)
+#   - Cost efficient (one ALB instead of two LoadBalancers)
+
+# Ingress controller class
+# Use 'alb' for AWS Load Balancer Controller
+ingressClassName: alb
+
+# Namespace where ingress will be created
+namespace: pms
+
+# Ingress metadata
+ingress:
+  name: pms-ingress
+
+  # Annotations for AWS Load Balancer Controller
+  # Full reference: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.7/guide/ingress/annotations/
+  annotations:
+    # Scheme: internet-facing (public) or internal (private VPC only)
+    alb.ingress.kubernetes.io/scheme: internet-facing
+
+    # Target type: ip (recommended for EKS) or instance
+    alb.ingress.kubernetes.io/target-type: ip
+
+    # Listen on both HTTP and HTTPS
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+
+    # SSL Redirect: redirect HTTP to HTTPS
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+
+    # ACM Certificate ARN (REQUIRED - replace with your certificate)
+    # Get from: aws acm list-certificates --region us-east-1
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID"
+
+    # Health check configuration
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+
+    # Success codes (200-399 for frontend SPA routing)
+    alb.ingress.kubernetes.io/success-codes: "200-399"
+
+    # WebSocket support: increase idle timeout for long-lived connections
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=300
+
+    # Target group attributes (sticky sessions, deregistration delay)
+    alb.ingress.kubernetes.io/target-group-attributes: |
+      stickiness.enabled=true,
+      stickiness.lb_cookie.duration_seconds=86400,
+      deregistration_delay.timeout_seconds=30
+
+    # Security groups (optional - ALB controller will create default)
+    # alb.ingress.kubernetes.io/security-groups: sg-xxxxx
+
+    # Subnets (optional - uses cluster subnets by default)
+    # alb.ingress.kubernetes.io/subnets: subnet-xxxxx,subnet-yyyyy
+
+    # Tags for cost allocation
+    alb.ingress.kubernetes.io/tags: |
+      Environment=production,
+      Project=pms,
+      ManagedBy=kubernetes
+
+# Host-based routing (optional)
+# If you want to use a domain name, set this to your domain
+# Otherwise, ALB DNS name will be used
+host: "" # e.g., "pms.yourdomain.com"
+
+# TLS configuration
+tls:
+  enabled: true
+  # If using host-based routing, specify hosts here
+  hosts: []
+    # - pms.yourdomain.com
+
+# Routing rules
+routes:
+  # Frontend: catch-all rule (MUST be last)
+  # Serves Angular SPA, handles client-side routing
+  frontend:
+    enabled: true
+    path: /
+    pathType: Prefix
+    service:
+      name: frontend
+      port: 80
+    # Backend configuration for Angular SPA
+    annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /
+      alb.ingress.kubernetes.io/success-codes: "200-404" # Allow 404 for SPA routing
+
+  # API Gateway: REST endpoints
+  # All backend REST APIs route through API Gateway
+  api:
+    enabled: true
+    path: /api
+    pathType: Prefix
+    service:
+      name: apigateway
+      port: 8088
+    annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+      alb.ingress.kubernetes.io/success-codes: "200-299"
+
+  # API Gateway: WebSocket endpoints
+  # SockJS/STOMP WebSocket connections for real-time data
+  websocket:
+    enabled: true
+    path: /ws
+    pathType: Prefix
+    service:
+      name: apigateway
+      port: 8088
+    annotations:
+      # WebSocket-specific: allow connection upgrade
+      alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+      alb.ingress.kubernetes.io/success-codes: "200-299"
+
+# Environment-specific overrides
+# Override these in values-dev.yaml, values-prod.yaml, etc.
+environment: production
+
+# Enable/disable features
+features:
+  # WAF (Web Application Firewall)
+  waf:
+    enabled: false
+    # aclArn: "arn:aws:wafv2:us-east-1:ACCOUNT_ID:regional/webacl/NAME/ID"
+
+  # Shield (DDoS protection)
+  shield:
+    enabled: false
+
+  # Access logs (S3 bucket)
+  accessLogs:
+    enabled: false
+    # bucket: "pms-alb-logs"
+    # prefix: "ingress"

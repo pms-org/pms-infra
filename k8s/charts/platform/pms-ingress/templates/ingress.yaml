@@ -1,0 +1,75 @@
+{{- if .Values.routes.api.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "pms-ingress.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingress
+  annotations:
+    # AWS Load Balancer Controller annotations
+    kubernetes.io/ingress.class: {{ .Values.ingressClassName }}
+    {{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingressClassName }}
+  
+  {{- if and .Values.tls.enabled .Values.host }}
+  tls:
+  - hosts:
+    {{- if .Values.tls.hosts }}
+    {{- range .Values.tls.hosts }}
+    - {{ . }}
+    {{- end }}
+    {{- else }}
+    - {{ .Values.host }}
+    {{- end }}
+  {{- end }}
+
+  rules:
+  {{- if .Values.host }}
+  - host: {{ .Values.host }}
+    http:
+  {{- else }}
+  - http:
+  {{- end }}
+      paths:
+      # IMPORTANT: Order matters! More specific paths MUST come before generic paths
+      
+      {{- if .Values.routes.api.enabled }}
+      # API Gateway: REST endpoints (/api/*)
+      - path: {{ .Values.routes.api.path }}
+        pathType: {{ .Values.routes.api.pathType }}
+        backend:
+          service:
+            name: {{ .Values.routes.api.service.name }}
+            port:
+              number: {{ .Values.routes.api.service.port }}
+      {{- end }}
+      
+      {{- if .Values.routes.websocket.enabled }}
+      # API Gateway: WebSocket endpoints (/ws/*)
+      - path: {{ .Values.routes.websocket.path }}
+        pathType: {{ .Values.routes.websocket.pathType }}
+        backend:
+          service:
+            name: {{ .Values.routes.websocket.service.name }}
+            port:
+              number: {{ .Values.routes.websocket.service.port }}
+      {{- end }}
+      
+      {{- if .Values.routes.frontend.enabled }}
+      # Frontend: Angular SPA (catch-all - MUST be last)
+      # Handles all routes not matched above (/, /portfolio, /dashboard, etc.)
+      - path: {{ .Values.routes.frontend.path }}
+        pathType: {{ .Values.routes.frontend.pathType }}
+        backend:
+          service:
+            name: {{ .Values.routes.frontend.service.name }}
+            port:
+              number: {{ .Values.routes.frontend.service.port }}
+      {{- end }}
+{{- end }}
