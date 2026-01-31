@@ -56,7 +56,10 @@ config:
 # Runtime environment configuration for frontend
 # These values are injected into env.js at deployment time via ConfigMap
 # The same frontend container image works across all environments (dev/stage/prod)
-# Services use Kubernetes DNS names for internal cluster communication
+#
+# INGRESS MODE: Frontend and API Gateway are accessible through the SAME ALB
+# Browser origin: http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com
+# All requests go through ALB (same-origin) - NO CORS needed!
 #
 # To change endpoints for a specific environment:
 # 1. Edit pms-platform/values.yaml under frontend.runtimeConfig
@@ -65,30 +68,30 @@ config:
 #
 # No frontend rebuild or image push required - this is runtime configuration!
 runtimeConfig:
-  # API Gateway (primary entry point) - MUST use external LoadBalancer URL
-  # Browser cannot resolve internal Kubernetes service names
-  API_GATEWAY_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
-  API_GATEWAY_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  # API Gateway through ALB (HTTP port 80, no explicit port in URL)
+  # ALB routes /api/* and /ws/* to API Gateway on port 8088 internally
+  API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  API_GATEWAY_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
 
   # All other services route through API Gateway
   # Frontend should ONLY talk to API Gateway (single entry point pattern)
-  AUTH_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
 
   # Portfolio Service
-  PORTFOLIO_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
-  PORTFOLIO_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  PORTFOLIO_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
 
   # Analytics Service
-  ANALYTICS_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
-  ANALYTICS_WS: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  ANALYTICS_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
 
   # Leaderboard Service
-  LEADERBOARD_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
-  LEADERBOARD_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  LEADERBOARD_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
 
   # RTTM Service
-  RTTM_HTTP: "http://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
-  RTTM_WS: "ws://a3ed40b7b10934382a4b04887e88ef29-164917452.us-east-1.elb.amazonaws.com:8088"
+  RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  RTTM_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

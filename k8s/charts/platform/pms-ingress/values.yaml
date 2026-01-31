@@ -32,15 +32,15 @@ ingress:
     # Target type: ip (recommended for EKS) or instance
     alb.ingress.kubernetes.io/target-type: ip
 
-    # Listen on both HTTP and HTTPS
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    # Listen on HTTP only for initial testing (add HTTPS after ACM cert)
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
 
-    # SSL Redirect: redirect HTTP to HTTPS
-    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    # SSL Redirect: disabled for initial testing
+    # alb.ingress.kubernetes.io/ssl-redirect: "443"
 
-    # ACM Certificate ARN (REQUIRED - replace with your certificate)
+    # ACM Certificate ARN (OPTIONAL for initial testing - will use HTTP only)
     # Get from: aws acm list-certificates --region us-east-1
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID"
+    # alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID"
 
     # Health check configuration
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
@@ -80,9 +80,9 @@ ingress:
 # Otherwise, ALB DNS name will be used
 host: "" # e.g., "pms.yourdomain.com"
 
-# TLS configuration
+# TLS configuration (disabled for initial testing)
 tls:
-  enabled: true
+  enabled: false
   # If using host-based routing, specify hosts here
   hosts: []
     # - pms.yourdomain.com
@@ -111,7 +111,7 @@ routes:
     pathType: Prefix
     service:
       name: apigateway
-      port: 8088
+      port: 8080 # API Gateway service listens on port 8080
     annotations:
       alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
       alb.ingress.kubernetes.io/success-codes: "200-299"
@@ -124,7 +124,7 @@ routes:
     pathType: Prefix
     service:
       name: apigateway
-      port: 8088
+      port: 8080 # API Gateway service listens on port 8080
     annotations:
       # WebSocket-specific: allow connection upgrade
       alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
@@ -132,7 +132,7 @@ routes:
 
 # Environment-specific overrides
 # Override these in values-dev.yaml, values-prod.yaml, etc.
-environment: production
+environment: development
 
 # Enable/disable features
 features:
