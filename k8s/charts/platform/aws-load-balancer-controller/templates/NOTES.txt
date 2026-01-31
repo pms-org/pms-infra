@@ -1,0 +1,19 @@
+AWS Load Balancer Controller has been installed!
+
+This chart uses the official eks/aws-load-balancer-controller as a dependency.
+
+Service Account: {{ index .Values "aws-load-balancer-controller" "serviceAccount" "name" | default "aws-load-balancer-controller" }}
+IRSA Role: {{ index .Values "aws-load-balancer-controller" "serviceAccount" "annotations" "eks.amazonaws.com/role-arn" }}
+Cluster: {{ index .Values "aws-load-balancer-controller" "clusterName" }}
+Region: {{ index .Values "aws-load-balancer-controller" "region" }}
+
+To verify the controller is running:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name=aws-load-balancer-controller
+
+To verify the IngressClass was created:
+
+  kubectl get ingressclass
+
+The controller is now ready to provision AWS Load Balancers for Ingress resources
+with ingressClassName: alb

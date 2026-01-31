@@ -1,0 +1,41 @@
+# AWS Load Balancer Controller Configuration
+# This is a wrapper chart that uses the official eks-charts as a dependency
+# All configuration must be nested under 'aws-load-balancer-controller' key
+
+aws-load-balancer-controller:
+  # Cluster configuration
+  clusterName: pms-dev
+  region: us-east-1
+  vpcId: "" # Auto-detected by controller
+
+  # Service Account configuration (uses existing IRSA from Terraform)
+  serviceAccount:
+    create: true
+    name: aws-load-balancer-controller
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::209332675115:role/pms-dev-aws-load-balancer-controller"
+
+  # Controller replica count
+  replicaCount: 2
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: 200m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+
+  # IngressClass configuration
+  ingressClass: alb
+  ingressClassParams:
+    create: true
+
+  # Enable Shield, WAF, WAFv2 (default false)
+  enableShield: false
+  enableWaf: false
+  enableWafv2: false
+
+  # Log level (info, debug, warn, error)
+  logLevel: info
