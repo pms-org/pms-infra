@@ -1,0 +1,20 @@
+{{- if not .Values.deployment }}
+# When postgres deployment is disabled, create a Service that points to external RDS
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+  labels:
+    app: {{ .Values.service.name }}
+    external: "true"
+spec:
+  type: ExternalName
+  externalName: {{ .Values.rds.endpoint }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.targetPort }}
+    protocol: TCP
+    name: postgresql
+{{- end }}

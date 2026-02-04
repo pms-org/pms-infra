@@ -40,6 +40,18 @@ resource "aws_security_group" "rds" {
     description     = var.ingress_description
   }
 
+  # Allow public access when publicly_accessible is true
+  dynamic "ingress" {
+    for_each = var.publicly_accessible ? [1] : []
+    content {
+      from_port   = var.port
+      to_port     = var.port
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow PostgreSQL from anywhere (public access)"
+    }
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -82,6 +94,7 @@ module "rds" {
   backup_retention_period = var.backup_retention_period
   skip_final_snapshot     = var.skip_final_snapshot
   deletion_protection     = var.deletion_protection
+  apply_immediately       = true
 
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 

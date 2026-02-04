@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pgadmin
+description: pgAdmin 4 - PostgreSQL Administration and Monitoring Tool
+type: application
+version: 1.0.0
+appVersion: "8.14"

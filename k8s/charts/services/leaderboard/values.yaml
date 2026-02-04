@@ -80,7 +80,7 @@ config:
   # Note: DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD come from global secrets/config
 
   # Database configuration
-  DB_DDL_AUTO: "update"
+  # DB_DDL_AUTO: "update"
   DB_SHOW_SQL: "false"
 
   # Service-specific config

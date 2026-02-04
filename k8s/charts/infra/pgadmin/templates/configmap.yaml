@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.service.name }}-config
+  namespace: {{ .Values.service.namespace }}
+data:
+  PGADMIN_DEFAULT_EMAIL: {{ .Values.config.PGADMIN_DEFAULT_EMAIL | quote }}
+  PGADMIN_CONFIG_SERVER_MODE: {{ .Values.config.PGADMIN_CONFIG_SERVER_MODE | quote }}
+  PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: {{ .Values.config.PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED | quote }}
+  
+  # Pre-configure database servers
+  servers.json: |
+    {
+      "Servers": {
+{{- range $index, $server := .Values.servers }}
+        "{{ add $index 1 }}": {
+          "Name": "{{ $server.name }}",
+          "Group": "{{ $server.group }}",
+          "Host": "{{ $server.host }}",
+          "Port": {{ $server.port }},
+          "MaintenanceDB": "{{ $server.database }}",
+          "Username": "{{ $server.username }}",
+          "SSLMode": "{{ $server.sslMode | default "prefer" }}",
+          "PassFile": "/pgpass"
+        }{{ if ne (add $index 1) (len $.Values.servers) }},{{ end }}
+{{- end }}
+      }
+    }

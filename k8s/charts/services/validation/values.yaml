@@ -18,7 +18,7 @@ deployment:
       maxUnavailable: 1
       maxSurge: 1
   image:
-    repository: niishantdev/pms-validation
+    repository: sureshvasantha/pms-validation
     tag: latest
     pullPolicy: Always
 
@@ -103,10 +103,36 @@ config:
 
   # Service-specific config
   SERVER_PORT: "8080"
-  DB_DDL_AUTO: "update"
+  # DB_DDL_AUTO: "update"
+  DB_FORMAT_SQL: "true"
+  JPA_JDBC_BATCH_SIZE: "50"
+  JPA_ORDER_INSERTS: "true"
+  JPA_ORDER_UPDATES: "true"
   KAFKA_CONSUMER_GROUP_ID: "validation-consumer-group"
   VALIDATION_CONSUMER_GROUP: "validation-consumer-group"
   LOGGING_LEVEL: "DEBUG"
+
+  # Kafka producer configuration
+  KAFKA_PRODUCER_ACKS: "all"
+  KAFKA_PRODUCER_RETRIES: "3"
+
+  # RTTM client configuration
+  RTTM_MODE: "kafka"
+  RTTM_SEND_TIMEOUT_MS: "3000"
+  RTTM_RETRY_MAX_ATTEMPTS: "3"
+  RTTM_RETRY_BACKOFF_MS: "100"
+  RTTM_METRICS_INTERVAL_MS: "30000"
+
+  # RTTM Kafka topics
+  KAFKA_TOPIC_TRADE_EVENTS: "rttm.trade.events"
+  KAFKA_TOPIC_DLQ_EVENTS: "rttm.dlq.events"
+  KAFKA_TOPIC_QUEUE_METRICS: "rttm.queue.metrics"
+  KAFKA_TOPIC_ERROR_EVENTS: "rttm.error.events"
+
+  # Validation configuration
+  VALIDATION_BUFFER_SIZE: "50"
+  VALIDATION_BATCH_SIZE: "1000"
+  VALIDATION_FLUSH_INTERVAL_MS: "5000"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

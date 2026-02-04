@@ -87,7 +87,7 @@ variable "major_engine_version" {
 variable "instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.t3.micro"
+  default     = "db.r7g.large"
 }
 
 variable "allocated_storage" {

@@ -1,3 +1,4 @@
+{{- if .Values.deployment }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -51,3 +52,4 @@ spec:
       - name: pgdata
         persistentVolumeClaim:
           claimName: {{ .Values.service.name }}-pvc
+{{- end }}

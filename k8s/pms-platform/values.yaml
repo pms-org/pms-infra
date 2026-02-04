@@ -2,7 +2,7 @@
 
 # Global toggles
 postgres:
-  enabled: true
+  enabled: true  # Enabled by default - deployment controlled per environment
 rabbitmq:
   enabled: true
 redis:
@@ -11,6 +11,8 @@ kafka:
   enabled: true
 schemaRegistry:
   enabled: true
+pgadmin:
+  enabled: false  # Enable in dev environment
 externalSecrets:
   enabled: false
 seedData:
@@ -106,6 +108,8 @@ global:
     DB_HOST: postgres
     DB_PORT: "5432"
     DB_NAME: pmsdb
+    DB_URL: jdbc:postgresql://postgres:5432/pmsdb
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
     DB_DRIVER: org.postgresql.Driver
     DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
     DB_DDL_AUTO: update
@@ -165,6 +169,19 @@ global:
     TRANSACTIONAL_TRANSACTIONS_CONSUMER_GROUP_ID: transactional-trades-consumer-group
     TRANSACTIONAL_TRADES_CONSUMER_LISTENING_TOPIC: valid-trades-topic
     TRANSACTIONAL_TRADES_CONSUMER_GROUP_ID: transactional-validation-consumer-group
+
+    # Analytics Service
+    ANALYTICS_PROFILES_ACTIVE: dev
+    ANALYTICS_SERVER_PORT: "8082"
+    ANALYTICS_REDIS_TIMEOUT: 10s
+    ANALYTICS_REDIS_SHUTDOWN_TIMEOUT: 2s
+    ANALYTICS_REDIS_SENTINEL_MASTER: pms-redis
+    ANALYTICS_REDIS_SENTINEL_NODES: redis-sentinel:26379
+    ANALYTICS_KAFKA_CONSUMER_GROUP_ID: analytics-group
+    ANALYTICS_KAFKA_SEND_TIMEOUT_MS: "30000"
+    DB_JDBC_BATCH_SIZE: "50"
+    FINNHUB_API_KEY: "your-api-key-here"
+    FINNHUB_API_BASE_URL: "https://finnhub.io/api/v1"
 
   # Global secrets configuration
   secrets:

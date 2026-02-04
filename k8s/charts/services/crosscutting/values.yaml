@@ -73,7 +73,7 @@ config:
   # Note: DB_HOST, DB_PORT, DB_NAME come from global config in pms-platform
 
   # Database configuration
-  DB_DDL_AUTO: "update"
+  # DB_DDL_AUTO: "update"
   DB_SHOW_SQL: "false"
 
   # Service-specific config

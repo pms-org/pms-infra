@@ -14,6 +14,9 @@ dependencies:
 - name: schema-registry
   repository: file://../charts/infra/schema-registry
   version: 0.1.0
+- name: pgadmin
+  repository: file://../charts/infra/pgadmin
+  version: 1.0.0
 - name: seed-data
   repository: file://../charts/infra/seed-data
   version: 0.1.0
@@ -53,5 +56,5 @@ dependencies:
 - name: frontend
   repository: file://../charts/services/frontend
   version: 0.1.0
-digest: sha256:3e54d522ad9cff8c43d9f5c121a157adc8e6a9ccb03f5d0e7758608aa0e4178a
-generated: "2026-01-29T13:03:44.272455263Z"
+digest: sha256:5f7713afd9feb390e6afe8d9e7d6734e9f814238a85304c02cae2b9108ac3efd
+generated: "2026-02-04T11:17:09.351355874Z"

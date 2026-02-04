@@ -78,18 +78,31 @@ module "eks" {
   }
 }
 
+# Create a DB subnet group using public subnets for internet accessibility
+resource "aws_db_subnet_group" "public" {
+  name       = "${local.cluster_name}-public-db"
+  subnet_ids = module.vpc.public_subnets
+
+  tags = {
+    Name = "${local.cluster_name}-public-db"
+  }
+}
+
 module "rds" {
   source = "../../modules/rds"
 
   aws_region             = var.aws_region
   cluster_name           = local.cluster_name
   vpc_id                 = module.vpc.vpc_id
-  db_subnet_group_name   = module.vpc.database_subnet_group_name
+  db_subnet_group_name   = aws_db_subnet_group.public.name
   allowed_security_groups = [module.eks.node_security_group_id]
 
   secret_name = "pms/${var.environment}/postgres"
 
   identifier = "${local.cluster_name}-postgres"
+
+  instance_class = "db.r7g.large"
+  publicly_accessible = true
 
   rds_tags = {
     Name = "${local.cluster_name}-postgres"

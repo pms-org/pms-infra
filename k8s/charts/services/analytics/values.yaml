@@ -13,7 +13,7 @@ service:
 deployment:
   replicas: 1
   image:
-    repository: niishantdev/pms-analytics
+    repository: sboomisnow/pms-analytics-app
     tag: latest
     pullPolicy: Always
 
@@ -94,8 +94,9 @@ config:
   # Note: DB_HOST, DB_PORT, DB_NAME, REDIS_HOST, REDIS_PORT come from global config in pms-platform
 
   # Database configuration
-  DB_DDL_AUTO: "update"
+  # DB_DDL_AUTO: "update"
   DB_SHOW_SQL: "false"
+  DB_JDBC_BATCH_SIZE: "50"
 
   # Service-specific config
   # Redis Sentinel configuration
@@ -117,6 +118,11 @@ config:
   ANALYTICS_KAFKA_CONSUMER_TOPIC: "transactional-trades-topic"
   ANALYTICS_KAFKA_PRODUCER_TOPIC: "analytics-trades-topic"
   ANALYTICS_KAFKA_SEND_TIMEOUT_MS: "60000"
+  ANALYTICS_KAFKA_CONSUMER_ID: "analytics-consumer"
+
+  # Buffer configuration
+  ANALYTICS_BUFFER_SIZE: "1000"
+  ANALYTICS_FLUSH_INTERVAL_MS: "5000"
 
   # Finnhub API configuration
   FINNHUB_API_BASE_URL: "https://finnhub.io/api/v1"

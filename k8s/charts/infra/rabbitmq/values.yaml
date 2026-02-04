@@ -70,6 +70,6 @@ secrets:
   # Secret key mappings
   data:
     - secretKey: RABBITMQ_DEFAULT_USER
-      remoteKey: RABBITMQ_USERNAME
+      remoteKey: RABBITMQ_DEFAULT_USER
     - secretKey: RABBITMQ_DEFAULT_PASS
-      remoteKey: RABBITMQ_PASSWORD
+      remoteKey: RABBITMQ_DEFAULT_PASS

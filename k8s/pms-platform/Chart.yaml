@@ -32,6 +32,11 @@ dependencies:
     version: 0.1.0
     condition: schemaRegistry.enabled
 
+  - name: pgadmin
+    repository: file://../charts/infra/pgadmin
+    version: 1.0.0
+    condition: pgadmin.enabled
+
   - name: seed-data
     repository: file://../charts/infra/seed-data
     version: 0.1.0

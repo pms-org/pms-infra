@@ -94,6 +94,10 @@ config:
   # DB_HOST, DB_PORT, DB_NAME, KAFKA_BOOTSTRAP_SERVERS, SCHEMA_REGISTRY_URL
   # All come from global config in pms-platform
   SERVER_PORT: "8090"
+  # DB_DDL_AUTO: "update"
+  DB_SHOW_SQL: "false"
+  DB_FORMAT_SQL: "true"
+  JPA_OPEN_IN_VIEW: "false"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

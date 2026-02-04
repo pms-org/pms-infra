@@ -1,0 +1,443 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-all-schemas
+  namespace: pms
+  labels:
+    app: database-init
+    component: schema-setup
+spec:
+  # Keep completed job for 5 minutes for log inspection
+  ttlSecondsAfterFinished: 300
+
+  # Retry up to 3 times if it fails
+  backoffLimit: 3
+
+  template:
+    metadata:
+      labels:
+        app: database-init
+        component: schema-setup
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: psql-client
+          image: postgres:16
+
+          # Environment variables for database connection
+          env:
+            - name: PGHOST
+              value: "postgres" # ExternalName service pointing to RDS
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: "pmsdb"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_USERNAME
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_PASSWORD
+
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e  # Exit on error
+
+              echo "=========================================="
+              echo "PMS Database Complete Schema Initialization"
+              echo "=========================================="
+              echo "Host: $PGHOST:$PGPORT"
+              echo "Database: $PGDATABASE"
+              echo "User: $PGUSER"
+              echo "Time: $(date)"
+              echo ""
+
+              # Test database connection first
+              echo "Testing database connection..."
+              if psql -c "SELECT version();" > /dev/null 2>&1; then
+                  echo "✓ Database connection successful"
+                  echo ""
+              else
+                  echo "✗ Failed to connect to database"
+                  exit 1
+              fi
+
+              # Execute the complete schema initialization
+              cat <<'EOSQL' | psql
+              -- ============================================
+              -- PMS Database Complete Schema Initialization
+              -- ============================================
+
+              \echo '>>> Creating Simulation Schema...'
+
+              CREATE TABLE IF NOT EXISTS "portfolio_id" (
+                 "portfolio_id" uuid PRIMARY KEY
+              );
+
+              CREATE TABLE IF NOT EXISTS "symbol" (
+                 "symbol" varchar(255) PRIMARY KEY
+              );
+
+              INSERT INTO "portfolio_id" ( portfolio_id ) VALUES 
+                 ( '3f2c1d4e-8b57-4a92-9c65-b5e6f4e19b73' ),
+                 ( 'a8d4c0fa-7c1b-4e5d-9a89-2d635f0e2a14' ),
+                 ( 'd91f0b62-4c2f-4b91-8f2f-1b6c4ad7e543' ),
+                 ( '59c8a6d1-3f8b-4a67-bab6-89d0e72cce10' ),
+                 ( 'e2fa4c39-2a65-41c8-9f91-3c57f1d900ba' )
+              ON CONFLICT (portfolio_id) DO NOTHING;
+
+              INSERT INTO "symbol" ( symbol ) VALUES 
+                 ( 'AAPL' ), ( 'MSFT' ), ( 'GOOGL' ), ( 'AMZN' ), ( 'META' ),
+                 ( 'NVDA' ), ( 'TSLA' ), ( 'NFLX' ), ( 'AMD' ), ( 'INTC' ),
+                 ( 'IBM' ), ( 'ORCL' ), ( 'BAC' ), ( 'JPM' ), ( 'WMT' )
+              ON CONFLICT (symbol) DO NOTHING;
+
+              \echo '✓ Simulation schema created'
+
+              \echo '>>> Creating Validation Schema...'
+
+              CREATE TABLE IF NOT EXISTS validation_invalid_trades (
+                  invalid_trade_outbox_id BIGSERIAL PRIMARY KEY,
+                  event_id UUID,
+                  trade_id UUID,
+                  portfolio_id UUID,
+                  symbol VARCHAR(255),
+                  side VARCHAR(50),
+                  price_per_stock NUMERIC(19, 4),
+                  quantity BIGINT,
+                  trade_timestamp TIMESTAMP,
+                  sent_status VARCHAR(255),
+                  validation_status VARCHAR(255),
+                  validation_errors TEXT,
+                  created_at TIMESTAMP,
+                  updated_at TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS validation_processed_messages (
+                  id BIGSERIAL PRIMARY KEY,
+                  trade_id UUID NOT NULL,
+                  consumer_group VARCHAR(255) NOT NULL,
+                  topic VARCHAR(255) NOT NULL,
+                  processed_at TIMESTAMP NOT NULL,
+                  CONSTRAINT uk_trade_id_consumer_group UNIQUE (trade_id, consumer_group)
+              );
+
+              CREATE TABLE IF NOT EXISTS pms_stocks (
+                  stock_id BIGSERIAL PRIMARY KEY,
+                  symbol VARCHAR(255) NOT NULL,
+                  sector_name VARCHAR(100) NOT NULL,
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS validation_outbox (
+                  validation_outbox_id BIGSERIAL PRIMARY KEY,
+                  event_id UUID NOT NULL,
+                  trade_id UUID NOT NULL,
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  side VARCHAR(50) NOT NULL,
+                  price_per_stock NUMERIC(19, 4) NOT NULL,
+                  quantity BIGINT NOT NULL,
+                  trade_timestamp TIMESTAMP NOT NULL,
+                  sent_status VARCHAR(255) NOT NULL,
+                  validation_status VARCHAR(255) NOT NULL,
+                  validation_errors TEXT,
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS validation_dlq_entry (
+                  dlq_entry_id BIGSERIAL PRIMARY KEY,
+                  payload BYTEA NOT NULL,
+                  error_detail TEXT,
+                  created_at TIMESTAMP NOT NULL
+              );
+
+              \echo '✓ Validation schema created'
+
+              \echo '>>> Creating Transactional Schema...'
+
+              CREATE TABLE IF NOT EXISTS transactional_outbox (
+                  transactional_outbox_id BIGSERIAL PRIMARY KEY,
+                  event_id UUID NOT NULL,
+                  trade_id UUID NOT NULL,
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  side VARCHAR(50) NOT NULL,
+                  price_per_stock NUMERIC(19, 4) NOT NULL,
+                  quantity BIGINT NOT NULL,
+                  trade_timestamp TIMESTAMP NOT NULL,
+                  sent_status VARCHAR(255) NOT NULL,
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS transactional_processed_messages (
+                  id BIGSERIAL PRIMARY KEY,
+                  trade_id UUID NOT NULL,
+                  consumer_group VARCHAR(255) NOT NULL,
+                  topic VARCHAR(255) NOT NULL,
+                  processed_at TIMESTAMP NOT NULL,
+                  CONSTRAINT uk_transactional_trade_id_consumer_group UNIQUE (trade_id, consumer_group)
+              );
+
+              CREATE TABLE IF NOT EXISTS transactional_dlq_entry (
+                  dlq_entry_id BIGSERIAL PRIMARY KEY,
+                  payload BYTEA NOT NULL,
+                  error_detail TEXT,
+                  created_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS "transaction" (
+                  transaction_id UUID PRIMARY KEY,
+                  trade_id UUID NOT NULL,
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  side VARCHAR(50) NOT NULL,
+                  price_per_stock NUMERIC(19, 4) NOT NULL,
+                  quantity BIGINT NOT NULL,
+                  trade_timestamp TIMESTAMP NOT NULL,
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL
+              );
+
+              \echo '✓ Transactional schema created'
+
+              \echo '>>> Creating RTTM Schema...'
+
+              CREATE TABLE IF NOT EXISTS rttm_portfolio_positions (
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  quantity BIGINT NOT NULL DEFAULT 0,
+                  average_price NUMERIC(19, 4),
+                  last_updated TIMESTAMP NOT NULL,
+                  PRIMARY KEY (portfolio_id, symbol)
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_invalid_trades (
+                  invalid_trade_id BIGSERIAL PRIMARY KEY,
+                  event_id UUID,
+                  trade_id UUID,
+                  portfolio_id UUID,
+                  symbol VARCHAR(255),
+                  side VARCHAR(50),
+                  price_per_stock NUMERIC(19, 4),
+                  quantity BIGINT,
+                  trade_timestamp TIMESTAMP,
+                  validation_errors TEXT,
+                  created_at TIMESTAMP,
+                  updated_at TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_processed_messages (
+                  id BIGSERIAL PRIMARY KEY,
+                  trade_id UUID NOT NULL,
+                  consumer_group VARCHAR(255) NOT NULL,
+                  topic VARCHAR(255) NOT NULL,
+                  processed_at TIMESTAMP NOT NULL,
+                  CONSTRAINT uk_rttm_trade_id_consumer_group UNIQUE (trade_id, consumer_group)
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_trade_events (
+                  event_id BIGSERIAL PRIMARY KEY,
+                  trade_id UUID NOT NULL,
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  side VARCHAR(50) NOT NULL,
+                  quantity BIGINT NOT NULL,
+                  price_per_stock NUMERIC(19, 4) NOT NULL,
+                  trade_timestamp TIMESTAMP NOT NULL,
+                  received_at TIMESTAMP NOT NULL,
+                  processed_at TIMESTAMP,
+                  status VARCHAR(50) NOT NULL,
+                  error_message TEXT,
+                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_error_events (
+                  error_id BIGSERIAL PRIMARY KEY,
+                  trade_id UUID,
+                  error_type VARCHAR(100) NOT NULL,
+                  error_message TEXT NOT NULL,
+                  stack_trace TEXT,
+                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_dlq_events (
+                  dlq_id BIGSERIAL PRIMARY KEY,
+                  trade_id UUID,
+                  payload TEXT NOT NULL,
+                  error_message TEXT,
+                  retry_count INT DEFAULT 0,
+                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  last_retry_at TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_queue_metrics (
+                  metric_id BIGSERIAL PRIMARY KEY,
+                  queue_name VARCHAR(100) NOT NULL,
+                  queue_size INT NOT NULL,
+                  enqueue_rate NUMERIC(10, 2),
+                  dequeue_rate NUMERIC(10, 2),
+                  measured_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_stage_latency (
+                  latency_id BIGSERIAL PRIMARY KEY,
+                  stage_name VARCHAR(100) NOT NULL,
+                  avg_latency_ms NUMERIC(10, 2) NOT NULL,
+                  max_latency_ms NUMERIC(10, 2) NOT NULL,
+                  min_latency_ms NUMERIC(10, 2) NOT NULL,
+                  sample_count INT NOT NULL,
+                  measured_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+
+              CREATE TABLE IF NOT EXISTS rttm_alerts (
+                  alert_id BIGSERIAL PRIMARY KEY,
+                  alert_type VARCHAR(50) NOT NULL,
+                  severity VARCHAR(20) NOT NULL,
+                  message TEXT NOT NULL,
+                  details JSONB,
+                  acknowledged BOOLEAN DEFAULT FALSE,
+                  acknowledged_at TIMESTAMP,
+                  acknowledged_by VARCHAR(100),
+                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+
+              \echo '✓ RTTM schema created'
+
+              \echo '>>> Creating Analytics Schema...'
+
+              CREATE TABLE IF NOT EXISTS analytics (
+                  analytics_id BIGSERIAL PRIMARY KEY,
+                  transaction_id UUID NOT NULL,
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  side VARCHAR(50) NOT NULL,
+                  price_per_stock NUMERIC(19, 4) NOT NULL,
+                  quantity BIGINT NOT NULL,
+                  trade_timestamp TIMESTAMP NOT NULL,
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS analytics_outbox (
+                  analytics_outbox_id BIGSERIAL PRIMARY KEY,
+                  event_id UUID NOT NULL,
+                  transaction_id UUID NOT NULL,
+                  portfolio_id UUID NOT NULL,
+                  symbol VARCHAR(255) NOT NULL,
+                  side VARCHAR(50) NOT NULL,
+                  price_per_stock NUMERIC(19, 4) NOT NULL,
+                  quantity BIGINT NOT NULL,
+                  trade_timestamp TIMESTAMP NOT NULL,
+                  sent_status VARCHAR(255) NOT NULL,
+                  created_at TIMESTAMP NOT NULL,
+                  updated_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS analytics_portfolio_value_history (
+                  portfolio_value_history_id BIGSERIAL PRIMARY KEY,
+                  portfolio_id UUID NOT NULL,
+                  total_value NUMERIC(19, 4) NOT NULL,
+                  calculated_at TIMESTAMP NOT NULL,
+                  created_at TIMESTAMP NOT NULL
+              );
+
+              CREATE TABLE IF NOT EXISTS analytics_portfolio_risk_status (
+                  portfolio_risk_status_id BIGSERIAL PRIMARY KEY,
+                  portfolio_id UUID NOT NULL,
+                  risk_level VARCHAR(50) NOT NULL,
+                  calculated_at TIMESTAMP NOT NULL,
+                  created_at TIMESTAMP NOT NULL
+              );
+
+              \echo '✓ Analytics schema created'
+
+              \echo '>>> Creating Indexes...'
+
+              CREATE INDEX IF NOT EXISTS idx_validation_invalid_trades_portfolio ON validation_invalid_trades(portfolio_id);
+              CREATE INDEX IF NOT EXISTS idx_validation_invalid_trades_symbol ON validation_invalid_trades(symbol);
+              CREATE INDEX IF NOT EXISTS idx_validation_invalid_trades_status ON validation_invalid_trades(sent_status);
+              CREATE INDEX IF NOT EXISTS idx_validation_outbox_status ON validation_outbox(sent_status);
+
+              CREATE INDEX IF NOT EXISTS idx_transaction_portfolio ON "transaction"(portfolio_id);
+              CREATE INDEX IF NOT EXISTS idx_transaction_symbol ON "transaction"(symbol);
+              CREATE INDEX IF NOT EXISTS idx_transaction_timestamp ON "transaction"(trade_timestamp);
+              CREATE INDEX IF NOT EXISTS idx_transactional_outbox_status ON transactional_outbox(sent_status);
+
+              CREATE INDEX IF NOT EXISTS idx_rttm_positions_portfolio ON rttm_portfolio_positions(portfolio_id);
+              CREATE INDEX IF NOT EXISTS idx_rttm_positions_symbol ON rttm_portfolio_positions(symbol);
+              CREATE INDEX IF NOT EXISTS idx_rttm_trade_events_status ON rttm_trade_events(status);
+              CREATE INDEX IF NOT EXISTS idx_rttm_trade_events_timestamp ON rttm_trade_events(trade_timestamp);
+
+              CREATE INDEX IF NOT EXISTS idx_analytics_portfolio ON analytics(portfolio_id);
+              CREATE INDEX IF NOT EXISTS idx_analytics_symbol ON analytics(symbol);
+              CREATE INDEX IF NOT EXISTS idx_analytics_timestamp ON analytics(trade_timestamp);
+              CREATE INDEX IF NOT EXISTS idx_analytics_outbox_status ON analytics_outbox(sent_status);
+
+              \echo '✓ Indexes created'
+
+              \echo ''
+              \echo '=========================================='
+              \echo 'Verification'
+              \echo '=========================================='
+
+              SELECT 'portfolio_id' as table_name, COUNT(*) as count FROM "portfolio_id"
+              UNION ALL
+              SELECT 'symbol', COUNT(*) FROM "symbol"
+              UNION ALL
+              SELECT 'validation_invalid_trades', COUNT(*) FROM validation_invalid_trades
+              UNION ALL
+              SELECT 'validation_outbox', COUNT(*) FROM validation_outbox
+              UNION ALL
+              SELECT 'transaction', COUNT(*) FROM "transaction"
+              UNION ALL
+              SELECT 'transactional_outbox', COUNT(*) FROM transactional_outbox
+              UNION ALL
+              SELECT 'analytics', COUNT(*) FROM analytics
+              UNION ALL
+              SELECT 'analytics_outbox', COUNT(*) FROM analytics_outbox
+              UNION ALL
+              SELECT 'rttm_portfolio_positions', COUNT(*) FROM rttm_portfolio_positions
+              ORDER BY table_name;
+
+              \dt
+
+              EOSQL
+
+              exit_code=$?
+
+              if [ $exit_code -eq 0 ]; then
+                  echo ""
+                  echo "=========================================="
+                  echo "✅ Database initialization completed!"
+                  echo "=========================================="
+                  echo ""
+                  echo "Reference Data Summary:"
+                  echo "  - Portfolios: 5"
+                  echo "  - Symbols: 15"
+                  echo ""
+                  echo "Services Supported:"
+                  echo "  - Simulation (portfolio_id, symbol)"
+                  echo "  - Validation (validation_*, pms_stocks)"
+                  echo "  - Transactional (transaction, transactional_*)"
+                  echo "  - RTTM (rttm_*)"
+                  echo "  - Analytics (analytics, analytics_*)"
+                  echo ""
+                  exit 0
+              else
+                  echo ""
+                  echo "=========================================="
+                  echo "❌ Database initialization failed!"
+                  echo "=========================================="
+                  exit 1
+              fi

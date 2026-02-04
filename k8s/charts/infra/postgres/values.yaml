@@ -1,5 +1,5 @@
 # Default values for postgres chart
-# This chart deploys PostgreSQL database
+# This chart deploys PostgreSQL database OR creates a service pointing to external RDS
 
 # Service configuration
 service:
@@ -9,7 +9,7 @@ service:
   targetPort: 5432
   type: ClusterIP
 
-# Deployment configuration
+# Deployment configuration (set to null to use external RDS)
 deployment:
   replicas: 1
   image:
@@ -130,3 +130,9 @@ seedData:
 
     - symbol: "WMT"
       sector: "RETAIL"
+
+# RDS Configuration (used when deployment is null)
+# When deployment is disabled, creates an ExternalName service pointing to RDS
+rds:
+  endpoint: "" # Override in environment-specific values (e.g., pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com)
+

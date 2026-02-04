@@ -1,0 +1,80 @@
+# Default values for pgadmin chart
+# This chart deploys pgAdmin 4 for PostgreSQL management
+
+# Service configuration
+service:
+  name: pgadmin
+  namespace: pms
+  port: 80
+  targetPort: 80
+  type: LoadBalancer # Publicly accessible via AWS ELB
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+
+# Deployment configuration
+deployment:
+  replicas: 1
+  image:
+    repository: dpage/pgadmin4
+    tag: "8.14"
+    pullPolicy: IfNotPresent
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# pgAdmin configuration
+config:
+  # Default email for login (must be valid format with known domain)
+  PGADMIN_DEFAULT_EMAIL: admin@example.com
+
+  # Server mode configuration
+  PGADMIN_CONFIG_SERVER_MODE: "True"
+  PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+
+# Secrets configuration (AWS Secrets Manager)
+secrets:
+  # AWS Secrets Manager secret path for pgAdmin credentials
+  path: pms/dev/pgadmin
+
+  # Refresh interval
+  refreshInterval: 1h
+
+  # Secret key mappings
+  data:
+    - secretKey: PGADMIN_DEFAULT_PASSWORD
+      remoteKey: PGADMIN_PASSWORD
+
+# PostgreSQL server configuration
+# This section defines the database connections that will be pre-configured
+servers:
+  # RDS PostgreSQL connection
+  - name: "PMS RDS Database"
+    group: "Production"
+    host: pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com
+    port: 5432
+    database: pmsdb
+    username: pmsadmin
+    # Password will come from AWS Secrets Manager
+    sslMode: prefer
+
+  # Add more servers as needed
+  # - name: "Staging Database"
+  #   group: "Staging"
+  #   host: staging-postgres.example.com
+  #   port: 5432
+  #   database: pmsdb
+
+# Persistence for pgAdmin settings
+persistence:
+  enabled: true
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+  storageClassName: "" # Use default storage class

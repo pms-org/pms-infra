@@ -13,7 +13,7 @@ service:
 deployment:
   replicas: 1
   image:
-    repository: niishantdev/pms-rttm
+    repository: sureshvasantha/pms-rttm
     tag: latest
     pullPolicy: Always
 
@@ -81,7 +81,7 @@ config:
   DB_URL: "jdbc:postgresql://postgres:5432/pmsdb"
 
   # Database JPA configuration
-  DB_DDL_AUTO: "update"
+  # DB_DDL_AUTO: "update"
   DB_SHOW_SQL: "true"
 
   # Kafka configuration
@@ -101,6 +101,50 @@ config:
   RTTM_QUEUE_CAPACITY: "10000"
   RTTM_CONSUMER_CONCURRENCY: "3"
   RTTM_FETCH_MAX_WAIT_MS: "3000"
+
+  # Kafka topic configurations
+  KAFKA_TOPIC_DLQ_EVENTS: "rttm.dlq.events"
+  KAFKA_TOPIC_ERROR_EVENTS: "rttm.error.events"
+  KAFKA_TOPIC_QUEUE_METRICS: "rttm.queue.metrics"
+  KAFKA_TOPIC_TRADE_EVENTS: "rttm.trade.events"
+  KAFKA_TOPIC_INVALID_TRADES: "invalid-trades-topic"
+
+  # RTTM queue metrics retention and aggregation
+  RTTM_QUEUE_METRICS_RETENTION_HOURS: "48"
+  RTTM_QUEUE_METRICS_CLEANUP_CRON: "0 0 2 * * ?"
+  RTTM_QUEUE_METRICS_AGG_THRESHOLD: "0.1"
+  RTTM_QUEUE_METRICS_MIN_INTERVAL: "5"
+  RTTM_QUEUE_METRICS_CACHE_TTL_HOURS: "24"
+
+  # RTTM alert generation thresholds
+  RTTM_ALERT_EVAL_INTERVAL: "60000"
+  RTTM_ALERT_AUTO_RESOLVE_INTERVAL: "300000"
+
+  # Latency thresholds (milliseconds)
+  RTTM_ALERT_LATENCY_WARNING: "50"
+  RTTM_ALERT_LATENCY_CRITICAL: "200"
+
+  # Error rate thresholds (count in 5 minutes)
+  RTTM_ALERT_ERROR_RATE_WARNING: "1"
+  RTTM_ALERT_ERROR_RATE_CRITICAL: "2"
+
+  # DLQ count thresholds (count in 5 minutes)
+  RTTM_ALERT_DLQ_WARNING: "1"
+  RTTM_ALERT_DLQ_CRITICAL: "2"
+
+  # Queue depth thresholds
+  RTTM_ALERT_QUEUE_DEPTH_WARNING: "10"
+  RTTM_ALERT_QUEUE_DEPTH_CRITICAL: "50"
+
+  # TPS (transactions per second) thresholds
+  RTTM_ALERT_TPS_WARNING: "10"
+  RTTM_ALERT_TPS_CRITICAL: "50"
+
+  # Redis configuration
+  REDIS_TIMEOUT: "2000"
+
+  # Database configuration
+  DB_FORMAT_SQL: "true"
 
 # Secrets configuration (AWS S=ecrets Manager)
 # RTTM service doesn't need specific secrets - uses global DB credentials

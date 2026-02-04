@@ -20,22 +20,28 @@ external-secrets:
 # Service-specific overrides
 simulation:
   secrets:
-    path: pms/simulation/dev
+    path: pms/dev/simulation
 
 trade-capture:
   secrets:
-    path: pms/trade-capture/dev
+    path: pms/dev/trade-capture
 
 validation:
   secrets:
-    path: pms/validation/dev
+    path: pms/dev/validation
 
 # Infrastructure service configurations
 postgres:
-  enabled: true
-  host: postgres
+  enabled: true # Keep enabled to create ExternalName service
+  deployment: null # Disable deployment - use RDS instead
+  rds:
+    endpoint: pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com
+  # Connection details for other services
+  host: postgres # Services connect to 'postgres' which points to RDS
   port: 5432
   database: pmsdb
+  # RDS credentials will come from AWS Secrets Manager
+  secretPath: pms/dev/postgres
 
 rabbitmq:
   enabled: true
@@ -57,3 +63,20 @@ redis:
 schema-registry:
   enabled: true
   url: http://schema-registry:8081
+
+# Monitoring and Administration Tools
+pgadmin:
+  enabled: true
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+  servers:
+    - name: "PMS RDS Production"
+      group: "AWS RDS"
+      host: pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com
+      port: 5432
+      database: pmsdb
+      username: pmsadmin
+      sslMode: prefer

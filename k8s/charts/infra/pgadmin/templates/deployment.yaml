@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      # Run as pgadmin user (UID 5050 in the image)
+      securityContext:
+        fsGroup: 5050
+        runAsUser: 5050
+        runAsNonRoot: true
+      
+      initContainers:
+      # Create pgpass file with RDS credentials
+      - name: create-pgpass
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "{{ (index .Values.servers 0).host }}:{{ (index .Values.servers 0).port }}:{{ (index .Values.servers 0).database }}:{{ (index .Values.servers 0).username }}:$RDS_PASSWORD" > /tmp/pgpass
+          chmod 600 /tmp/pgpass
+        env:
+        - name: RDS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.service.name }}-secrets
+              key: RDS_PASSWORD
+        volumeMounts:
+        - name: pgpass
+          mountPath: /tmp
+      
+      containers:
+      - name: {{ .Values.service.name }}
+        image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
+        imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+        
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.targetPort }}
+          protocol: TCP
+        
+        env:
+        # Load configuration from ConfigMap
+        - name: PGADMIN_DEFAULT_EMAIL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.service.name }}-config
+              key: PGADMIN_DEFAULT_EMAIL
+        
+        - name: PGADMIN_CONFIG_SERVER_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.service.name }}-config
+              key: PGADMIN_CONFIG_SERVER_MODE
+        
+        - name: PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.service.name }}-config
+              key: PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED
+        
+        # Load password from Secret
+        - name: PGADMIN_DEFAULT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.service.name }}-secrets
+              key: PGADMIN_DEFAULT_PASSWORD
+        
+        volumeMounts:
+        - name: pgadmin-data
+          mountPath: /var/lib/pgadmin
+        - name: pgadmin-config
+          mountPath: /pgadmin4/servers.json
+          subPath: servers.json
+        - name: pgpass
+          mountPath: /pgpass
+          subPath: pgpass
+        
+        resources:
+          {{- toYaml .Values.deployment.resources | nindent 10 }}
+        
+        livenessProbe:
+          httpGet:
+            path: /misc/ping
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        
+        readinessProbe:
+          httpGet:
+            path: /misc/ping
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      
+      volumes:
+      - name: pgadmin-data
+        persistentVolumeClaim:
+          claimName: {{ .Values.service.name }}-pvc
+      - name: pgadmin-config
+        configMap:
+          name: {{ .Values.service.name }}-config
+          items:
+          - key: servers.json
+            path: servers.json
+      - name: pgpass
+        emptyDir: {}
