@@ -7,7 +7,7 @@
 *.pem
 # *.env
 *.tgz
-
+*.env
 # Terraform
 *.tfstate
 *.tfstate.backup
