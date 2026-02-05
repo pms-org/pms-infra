@@ -1,0 +1,151 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-validation-tables
+  namespace: pms
+  labels:
+    app: database-init
+    component: validation-reference-data
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: database-init
+        job: populate-validation-tables
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: populate-validation-tables
+          image: postgres:16
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "🔧 Populating Validation Reference Tables"
+              echo "=========================================="
+
+              # Run the SQL script
+              psql "$DATABASE_URL" -f /scripts/populate-validation-tables.sql
+
+              echo ""
+              echo "✅ Validation tables populated successfully"
+              echo "=========================================="
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_PASSWORD
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@postgres:5432/pmsdb"
+          volumeMounts:
+            - name: sql-scripts
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: sql-scripts
+          configMap:
+            name: populate-validation-tables-scripts
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: populate-validation-tables-scripts
+  namespace: pms
+  labels:
+    app: database-init
+    component: validation-reference-data
+data:
+  populate-validation-tables.sql: |
+    -- ============================================
+    -- POPULATE VALIDATION REFERENCE TABLES
+    -- ============================================
+    -- This script populates the validation service reference tables
+    -- with data matching the simulation reference data.
+    --
+    -- Validation service checks:
+    -- 1. portfolio_investor_details (NOT portfolio_id)
+    -- 2. pms_stocks (NOT symbol)
+    --
+    -- Root Cause: Simulation uses portfolio_id/symbol tables,
+    -- but validation uses different tables, causing 100% validation failures.
+    -- ============================================
+
+    \echo ''
+    \echo '=========================================='
+    \echo 'Populating Validation Reference Tables'
+    \echo '=========================================='
+
+    -- ============================================
+    -- 1. POPULATE PORTFOLIO_INVESTOR_DETAILS
+    -- ============================================
+    \echo '>>> Populating portfolio_investor_details...'
+
+    INSERT INTO portfolio_investor_details (portfolio_id, name, phone_number, address)
+    VALUES
+        ('d91f0b62-4c2f-4b91-8f2f-1b6c4ad7e543', 'Growth Investor', 1234567890, '123 Wall St, New York, NY'),
+        ('3f2c1d4e-8b57-4a92-9c65-b5e6f4e19b73', 'Conservative Investor', 2345678901, '456 Main St, Boston, MA'),
+        ('59c8a6d1-3f8b-4a67-bab6-89d0e72cce10', 'Balanced Investor', 3456789012, '789 Oak Ave, Chicago, IL'),
+        ('e2fa4c39-2a65-41c8-9f91-3c57f1d900ba', 'Aggressive Investor', 4567890123, '321 Pine St, San Francisco, CA'),
+        ('a8d4c0fa-7c1b-4e5d-9a89-2d635f0e2a14', 'Dividend Investor', 5678901234, '654 Elm St, Seattle, WA')
+    ON CONFLICT (portfolio_id) DO NOTHING;
+
+    \echo '✓ portfolio_investor_details populated'
+
+    -- ============================================
+    -- 2. POPULATE PMS_STOCKS
+    -- ============================================
+    \echo '>>> Populating pms_stocks...'
+
+    INSERT INTO pms_stocks (stock_id, symbol, sector_name, created_at, updated_at)
+    VALUES
+        (1, 'AAPL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (2, 'MSFT', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (3, 'GOOGL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (4, 'AMZN', 'Consumer Cyclical', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (5, 'TSLA', 'Consumer Cyclical', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (6, 'META', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (7, 'NVDA', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (8, 'JPM', 'Financial Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (9, 'WMT', 'Consumer Defensive', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (10, 'JNJ', 'Healthcare', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (11, 'NFLX', 'Communication Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (12, 'ORCL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (13, 'INTC', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (14, 'AMD', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        (15, 'CRM', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (stock_id) DO UPDATE SET
+        sector_name = EXCLUDED.sector_name,
+        updated_at = CURRENT_TIMESTAMP;
+
+    \echo '✓ pms_stocks populated'
+
+    -- ============================================
+    -- 3. VERIFICATION
+    -- ============================================
+    \echo ''
+    \echo '=========================================='
+    \echo 'Verification'
+    \echo '=========================================='
+
+    SELECT 'portfolio_investor_details' as table_name, COUNT(*) as count FROM portfolio_investor_details
+    UNION ALL
+    SELECT 'pms_stocks', COUNT(*) FROM pms_stocks;
+
+    \echo ''
+    \echo '=========================================='
+    \echo 'Validation Tables Populated Successfully'
+    \echo '=========================================='

@@ -13,7 +13,7 @@ service:
 deployment:
   replicas: 1
   image:
-    repository: niishantdev/pms-portfolio
+    repository: nehanawork1/pms-portfolio
     tag: latest
     pullPolicy: Always
 

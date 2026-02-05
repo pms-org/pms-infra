@@ -7,7 +7,8 @@ service:
   namespace: pms
   port: 8088
   targetPort: 8088
-  type: ClusterIP
+  type: ClusterIP # Changed from LoadBalancer - now accessible via ingress only
+  # Removed LoadBalancer annotations - no longer needed with ingress
 
 # Deployment configuration
 deployment:

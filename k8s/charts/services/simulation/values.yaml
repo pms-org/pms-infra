@@ -13,7 +13,7 @@ service:
 deployment:
   replicas: 1
   image:
-    repository: niishantdev/pms-simulation
+    repository: nehanawork1/pms-simulation
     tag: latest
     pullPolicy: Always
 

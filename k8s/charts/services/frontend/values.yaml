@@ -7,7 +7,8 @@ service:
   namespace: pms
   port: 80
   targetPort: 80
-  type: LoadBalancer
+  type: ClusterIP # Changed from LoadBalancer - now accessible via ingress only
+  # Removed LoadBalancer annotations - no longer needed with ingress
 
 # Deployment configuration
 deployment:
@@ -68,30 +69,29 @@ config:
 #
 # No frontend rebuild or image push required - this is runtime configuration!
 runtimeConfig:
-  # API Gateway through ALB (HTTP port 80, no explicit port in URL)
-  # ALB routes /api/* and /ws/* to API Gateway on port 8088 internally
-  API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-  API_GATEWAY_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  # API Gateway through internet-facing NLB (HTTP port 8088)
+  API_GATEWAY_HTTP: "http://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
+  API_GATEWAY_WS: "ws://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
 
   # All other services route through API Gateway
   # Frontend should ONLY talk to API Gateway (single entry point pattern)
-  AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  AUTH_HTTP: "http://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
 
   # Portfolio Service
-  PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-  PORTFOLIO_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  PORTFOLIO_HTTP: "http://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
+  PORTFOLIO_WS: "ws://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
 
   # Analytics Service
-  ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-  ANALYTICS_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  ANALYTICS_HTTP: "http://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
+  ANALYTICS_WS: "ws://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
 
   # Leaderboard Service
-  LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-  LEADERBOARD_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  LEADERBOARD_HTTP: "http://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
+  LEADERBOARD_WS: "ws://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
 
   # RTTM Service
-  RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-  RTTM_WS: "ws://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+  RTTM_HTTP: "http://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
+  RTTM_WS: "ws://k8s-pms-apigatew-6edef58215-9da0932f585af4ad.elb.us-east-1.amazonaws.com:8088"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:

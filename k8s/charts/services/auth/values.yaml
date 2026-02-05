@@ -13,6 +13,7 @@ service:
 deployment:
   replicas: 1
   image:
+    # repository: neha544/pms-auth
     repository: niishantdev/pms-auth
     tag: latest
     pullPolicy: Always

@@ -21,7 +21,7 @@ seedData:
 apigateway:
   enabled: true
   service:
-    type: LoadBalancer
+    type: ClusterIP  # Changed to ClusterIP - accessible via ingress only
   deployment:
     healthChecks:
       enabled: false
@@ -74,7 +74,7 @@ rttm:
 frontend:
   enabled: true
   service:
-    type: LoadBalancer  # Keep LoadBalancer for now, will test both simultaneously
+    type: ClusterIP  # Changed to ClusterIP - accessible via ingress only
   deployment:
     healthChecks:
       enabled: false
@@ -85,19 +85,19 @@ frontend:
     # API Gateway through ALB - Same origin as frontend!
     # ALB routes /api/* and /ws/* to API Gateway internally
     # NOTE: Use http:// for WebSocket URLs - SockJS will upgrade to ws:// internally
-    API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    API_GATEWAY_WS: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
+    API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    API_GATEWAY_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
     
     # All services route through API Gateway (single entry point)
-    AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    PORTFOLIO_WS: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    ANALYTICS_WS: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    LEADERBOARD_WS: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"
-    RTTM_WS: "http://k8s-pms-pmsingre-ba04040d46-627579414.us-east-1.elb.amazonaws.com"# Optional shared values
+    AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    PORTFOLIO_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    ANALYTICS_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    LEADERBOARD_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    RTTM_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"# Optional shared values
 global:
   environment: dev
   namespace: pms
