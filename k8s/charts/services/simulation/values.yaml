@@ -35,7 +35,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: false
+    enabled: true # ENABLED: Critical - trade-capture service depends on simulation being ready
     liveness:
       path: /actuator/health/liveness
       initialDelaySeconds: 60

@@ -28,7 +28,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: true
+    enabled: false # DISABLED: No spring-boot-starter-actuator in pom.xml - /actuator/health endpoint doesn't exist
     liveness:
       path: /actuator/health
       initialDelaySeconds: 60

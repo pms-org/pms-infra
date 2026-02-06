@@ -33,7 +33,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: false
+    enabled: true # ENABLED: Critical - transactional service depends on validation being ready
     liveness:
       path: /actuator/health/liveness
       initialDelaySeconds: 60

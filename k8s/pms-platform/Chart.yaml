@@ -48,6 +48,11 @@ dependencies:
     version: 0.1.0
     condition: externalSecrets.enabled
 
+  - name: pms-ingress
+    repository: file://../charts/platform/pms-ingress
+    version: 1.0.0
+    condition: pmsIngress.enabled
+
   # Services
   - name: apigateway
     repository: file://../charts/services/apigateway

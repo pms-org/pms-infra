@@ -110,24 +110,36 @@ data:
     -- ============================================
     \echo '>>> Populating pms_stocks...'
 
-    INSERT INTO pms_stocks (stock_id, symbol, sector_name, created_at, updated_at)
+    -- Insert each symbol individually with ON CONFLICT to handle duplicates gracefully
+    INSERT INTO pms_stocks (symbol, sector_name, created_at, updated_at)
+    VALUES ('IBM', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (symbol) DO UPDATE SET
+        sector_name = EXCLUDED.sector_name,
+        updated_at = CURRENT_TIMESTAMP;
+
+    INSERT INTO pms_stocks (symbol, sector_name, created_at, updated_at)
+    VALUES ('BAC', 'Financial Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (symbol) DO UPDATE SET
+        sector_name = EXCLUDED.sector_name,
+        updated_at = CURRENT_TIMESTAMP;
+
+    -- Insert remaining symbols
+    INSERT INTO pms_stocks (symbol, sector_name, created_at, updated_at)
     VALUES
-        (1, 'AAPL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (2, 'MSFT', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (3, 'GOOGL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (4, 'AMZN', 'Consumer Cyclical', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (5, 'TSLA', 'Consumer Cyclical', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (6, 'META', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (7, 'NVDA', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (8, 'JPM', 'Financial Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (9, 'WMT', 'Consumer Defensive', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (10, 'JNJ', 'Healthcare', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (11, 'NFLX', 'Communication Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (12, 'ORCL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (13, 'INTC', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (14, 'AMD', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-        (15, 'CRM', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    ON CONFLICT (stock_id) DO UPDATE SET
+        ('AAPL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('MSFT', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('GOOGL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('AMZN', 'Consumer Cyclical', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('META', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('NVDA', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('TSLA', 'Automotive', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('NFLX', 'Communication Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('AMD', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('INTC', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('ORCL', 'Technology', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('JPM', 'Financial Services', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+        ('WMT', 'Consumer Defensive', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    ON CONFLICT (symbol) DO UPDATE SET
         sector_name = EXCLUDED.sector_name,
         updated_at = CURRENT_TIMESTAMP;
 

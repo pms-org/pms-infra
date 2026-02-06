@@ -14,7 +14,7 @@ service:
 deployment:
   replicas: 1
   image:
-    repository: niishantdev/pms-frontend
+    repository: srikanth1503/pms-frontend
     tag: latest
     pullPolicy: Always
 

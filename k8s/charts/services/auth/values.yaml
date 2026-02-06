@@ -29,7 +29,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: false
+    enabled: true # ENABLED: Critical - simulation service depends on auth being ready
     liveness:
       path: /actuator/health/liveness
       initialDelaySeconds: 60
@@ -54,13 +54,13 @@ deployment:
 
   # Dependencies list - data-driven approach for init containers
   dependencies:
-    - name: postgres
+    - name: rds-postgres
       enabled: true
       image: *waitImage
       command:
         - sh
         - -c
-        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+        - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
     - name: apigateway
       enabled: true
       image: *waitImage

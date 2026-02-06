@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-invalid-trades
+  namespace: pms
+  labels:
+    app: database-cleanup
+    component: delete-invalid-trades
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app: database-cleanup
+        job: delete-invalid-trades
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: delete-invalid-trades
+          image: postgres:16
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              echo "🗑️  DELETING ALL INVALID TRADES (DEV ONLY)"
+              echo "=========================================="
+
+              # Run the SQL script
+              psql "$DATABASE_URL" <<-EOSQL
+                \echo ''
+                \echo '=========================================='
+                \echo 'Before Deletion - Invalid Trades Count'
+                \echo '=========================================='
+                
+                SELECT COUNT(*) as invalid_trades_count FROM validation_invalid_trades;
+                
+                \echo ''
+                \echo '=========================================='
+                \echo 'DELETING ALL INVALID TRADES...'
+                \echo '=========================================='
+                
+                DELETE FROM validation_invalid_trades;
+                
+                \echo ''
+                \echo '=========================================='
+                \echo 'After Deletion - Verification'
+                \echo '=========================================='
+                
+                SELECT COUNT(*) as invalid_trades_remaining FROM validation_invalid_trades;
+                
+                \echo ''
+                \echo '✅ All invalid trades deleted successfully'
+                \echo '=========================================='
+              EOSQL
+
+              echo ""
+              echo "✅ Invalid trades cleanup completed"
+              echo "=========================================="
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_PASSWORD
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pms-global-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@postgres:5432/pmsdb"

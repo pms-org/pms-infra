@@ -29,7 +29,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: false
+    enabled: true # ENABLED: Critical - auth service depends on apigateway being ready
     liveness:
       path: /actuator/health/liveness
       initialDelaySeconds: 60

@@ -28,7 +28,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: true
+    enabled: false # DISABLED: No spring-boot-starter-actuator in pom.xml - /actuator/health endpoint doesn't exist
     liveness:
       path: /actuator/health
       initialDelaySeconds: 60
@@ -53,13 +53,13 @@ deployment:
 
   # Dependencies list - data-driven approach for init containers
   dependencies:
-    - name: postgres
+    - name: rds-postgres
       enabled: true
       image: *waitImage
       command:
         - sh
         - -c
-        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+        - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
     - name: redis
       enabled: true
       image: *waitImage

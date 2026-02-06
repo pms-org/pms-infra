@@ -28,7 +28,7 @@ deployment:
 
   # Health check probes
   healthChecks:
-    enabled: false
+    enabled: true # CHANGED: Enable health checks to ensure service is truly ready
     liveness:
       path: /actuator/health
       initialDelaySeconds: 60
@@ -46,20 +46,20 @@ deployment:
       initialDelaySeconds: 10
       periodSeconds: 10
       timeoutSeconds: 5
-      failureThreshold: 30
+      failureThreshold: 30 # 30 failures * 10s = 5 minutes max startup time
 
   # Generic wait image for init containers
   waitImage: &waitImage "busybox:1.36"
 
   # Dependencies list - data-driven approach for init containers
   dependencies:
-    - name: postgres
+    - name: rds-postgres
       enabled: true
       image: *waitImage
       command:
         - sh
         - -c
-        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+        - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
     - name: redis
       enabled: true
       image: *waitImage

@@ -2,7 +2,7 @@
 
 # Global toggles
 postgres:
-  enabled: true  # Enabled by default - deployment controlled per environment
+  enabled: false  # DISABLED - RDS ONLY (AUTHORITATIVE)
 rabbitmq:
   enabled: true
 redis:
@@ -17,11 +17,36 @@ externalSecrets:
   enabled: false
 seedData:
   enabled: false
+pmsIngress:
+  enabled: true
+
+# Ingress configuration
+# The pms-ingress chart will create an ALB and route traffic to frontend and apigateway
+pms-ingress:
+  namespace: pms
+  ingressClassName: alb
+  host: ""  # Empty = accept all hosts (ALB DNS works directly)
+  
+  # Keep TLS disabled initially - enable after adding ACM certificate
+  tls:
+    enabled: false
+  
+  routes:
+    frontend:
+      enabled: true
+    api:
+      enabled: true
+    websocket:
+      enabled: true
 
 apigateway:
   enabled: true
   service:
     type: ClusterIP  # Changed to ClusterIP - accessible via ingress only
+    annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+      alb.ingress.kubernetes.io/healthcheck-port: "8088"
+      alb.ingress.kubernetes.io/success-codes: "200-299"
   deployment:
     healthChecks:
       enabled: false
@@ -85,31 +110,31 @@ frontend:
     # API Gateway through ALB - Same origin as frontend!
     # ALB routes /api/* and /ws/* to API Gateway internally
     # NOTE: Use http:// for WebSocket URLs - SockJS will upgrade to ws:// internally
-    API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    API_GATEWAY_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
+    API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    API_GATEWAY_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
     
     # All services route through API Gateway (single entry point)
-    AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    PORTFOLIO_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    ANALYTICS_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    LEADERBOARD_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"
-    RTTM_WS: "http://k8s-pms-pmsingre-ba04040d46-2083897170.us-east-1.elb.amazonaws.com"# Optional shared values
+    AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    PORTFOLIO_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    ANALYTICS_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    LEADERBOARD_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    RTTM_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"# Optional shared values
 global:
   environment: dev
   namespace: pms
 
   # Global configuration (non-secret values shared across services)
   config:
-    # Database
-    DB_HOST: postgres
+    # Database - RDS ONLY (AUTHORITATIVE)
+    DB_HOST: pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com
     DB_PORT: "5432"
     DB_NAME: pmsdb
-    DB_URL: jdbc:postgresql://postgres:5432/pmsdb
-    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pmsdb
+    DB_URL: jdbc:postgresql://pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com:5432/pmsdb
+    SPRING_DATASOURCE_URL: jdbc:postgresql://pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com:5432/pmsdb
     DB_DRIVER: org.postgresql.Driver
     DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
     DB_DDL_AUTO: update
