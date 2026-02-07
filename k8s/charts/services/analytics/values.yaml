@@ -135,7 +135,7 @@ config:
   ANALYTICS_PORTFOLIO_VALUE_CRON: "0 59 23 * * ?" # Daily at 23:59 (app.properties value)
   ANALYTICS_PORTFOLIO_VALUE_TIMEZONE: "Asia/Kolkata" # Changed from UTC to match app.properties
   ANALYTICS_PRICE_REFRESH_DELAY_MS: "30000" # 30 seconds (was 3000ms)
-  ANALYTICS_ENABLE_PRICE_REFRESH: "true"  # Enable price refresh scheduler
+  ANALYTICS_ENABLE_PRICE_REFRESH: "true" # Enable price refresh scheduler
 
   # Outbox configuration
   ANALYTICS_OUTBOX_SYSTEM_FAILURE_DELAY_MS: "2000" # Changed from 10000 to match app.properties
