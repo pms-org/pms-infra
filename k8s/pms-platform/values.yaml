@@ -277,19 +277,19 @@ frontend:
     # API Gateway through ALB - Same origin as frontend!
     # ALB routes /api/* and /ws/* to API Gateway internally
     # NOTE: Use http:// for WebSocket URLs - SockJS will upgrade to ws:// internally
-    API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    API_GATEWAY_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
+    API_GATEWAY_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    API_GATEWAY_WS: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
     
     # All services route through API Gateway (single entry point)
-    AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    PORTFOLIO_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    ANALYTICS_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    LEADERBOARD_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"
-    RTTM_WS: "http://k8s-pms-pmsingre-ba04040d46-1336522306.us-east-1.elb.amazonaws.com"# Optional shared values
+    AUTH_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    PORTFOLIO_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    PORTFOLIO_WS: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    ANALYTICS_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    ANALYTICS_WS: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    LEADERBOARD_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    LEADERBOARD_WS: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    RTTM_HTTP: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"
+    RTTM_WS: "http://k8s-pms-pmsingre-ba04040d46-1513529560.us-east-1.elb.amazonaws.com"# Optional shared values
 global:
   environment: dev
   namespace: pms
@@ -317,6 +317,9 @@ global:
     REDIS_SENTINEL_MASTER: pms-redis
     REDIS_TIMEOUT: 2s
     CACHE_TYPE: redis
+    SPRING_DATA_REDIS_PASSWORD: "redis"  # Critical: Required for Redis Sentinel authentication
+    SPRING_DATA_REDIS_SENTINEL_MASTER: pms-redis  # Spring Boot property for Sentinel master
+    SPRING_DATA_REDIS_SENTINEL_NODES: "redis-sentinel:26379"  # Spring Boot property for Sentinel nodes
 
     # RabbitMQ
     RABBITMQ_HOST: rabbitmq
