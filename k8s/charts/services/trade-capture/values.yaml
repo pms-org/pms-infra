@@ -60,13 +60,13 @@ deployment:
 
   # Dependencies list - data-driven approach for init containers
   dependencies:
-    - name: postgres
+    - name: rds-postgres
       enabled: true
       image: *waitImage
       command:
         - sh
         - -c
-        - "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"
+        - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
     - name: rabbitmq
       enabled: true
       image: *waitImage
@@ -121,6 +121,17 @@ config:
   OUTBOX_POLL_INTERVAL: "100"
   OUTBOX_BATCH_SIZE: "200"
   OUTBOX_CONCURRENCY: "4"
+
+  # RTTM Client Configuration
+  RTTM_MODE: kafka
+  KAFKA_TOPIC_TRADE_EVENTS: rttm.trade.events
+  KAFKA_TOPIC_DLQ_EVENTS: rttm.dlq.events
+  KAFKA_TOPIC_QUEUE_METRICS: rttm.queue.metrics
+  KAFKA_TOPIC_ERROR_EVENTS: rttm.error.events
+  RTTM_SEND_TIMEOUT_MS: "3000"
+  RTTM_RETRY_MAX_ATTEMPTS: "3"
+  RTTM_RETRY_BACKOFF_MS: "100"
+  RTTM_METRICS_INTERVAL_MS: "30000"
 
 # Secrets configuration (AWS Secrets Manager)
 secrets:
