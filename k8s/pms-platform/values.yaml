@@ -64,7 +64,7 @@ simulation:
         command:
           - sh
           - -c
-          - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+          - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
       - name: rabbitmq
         enabled: true
         image: busybox:1.36
@@ -91,7 +91,7 @@ portfolio:
         command:
           - sh
           - -c
-          - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+          - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
 tradeCapture:
   enabled: true
   deployment:
@@ -104,7 +104,7 @@ tradeCapture:
         command:
           - sh
           - -c
-          - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+          - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
       - name: rabbitmq
         enabled: true
         image: busybox:1.36
@@ -145,7 +145,7 @@ validation:
         command:
           - sh
           - -c
-          - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+          - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
       - name: redis
         enabled: true
         image: busybox:1.36
@@ -186,7 +186,7 @@ transactional:
         command:
           - sh
           - -c
-          - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+          - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
       - name: kafka
         enabled: true
         image: busybox:1.36
@@ -220,7 +220,7 @@ analytics:
         command:
           - sh
           - -c
-          - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+          - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
       - name: redis
         enabled: true
         image: busybox:1.36
@@ -296,12 +296,12 @@ global:
 
   # Global configuration (non-secret values shared across services)
   config:
-    # Database - RDS ONLY (AUTHORITATIVE)
-    DB_HOST: pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com
+    # Database - RDS ONLY (AUTHORITATIVE) - NEW RDS in us-east-2
+    DB_HOST: pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com
     DB_PORT: "5432"
-    DB_NAME: pmsdb
-    DB_URL: jdbc:postgresql://pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com:5432/pmsdb
-    SPRING_DATASOURCE_URL: jdbc:postgresql://pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com:5432/pmsdb
+    DB_NAME: pms-db-green
+    DB_URL: jdbc:postgresql://pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com:5432/pms-db-green
+    SPRING_DATASOURCE_URL: jdbc:postgresql://pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com:5432/pms-db-green
     DB_DRIVER: org.postgresql.Driver
     DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
     DB_DDL_AUTO: update

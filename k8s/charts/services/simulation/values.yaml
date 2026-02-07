@@ -72,7 +72,7 @@ deployment:
       command:
         - sh
         - -c
-        - "until nc -z pms-dev-postgres.cab8eqka4smp.us-east-1.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
+        - "until nc -z pms-db-instance-green.cluster-cvk4yqey0ex7.us-east-2.rds.amazonaws.com 5432; do echo waiting for RDS postgres; sleep 2; done"
     - name: rabbitmq
       enabled: true
       image: *waitImage
