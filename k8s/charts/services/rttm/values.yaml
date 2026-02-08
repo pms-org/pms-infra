@@ -81,7 +81,7 @@ config:
   DB_URL: "jdbc:postgresql://postgres:5432/pmsdb"
 
   # Database JPA configuration
-  # DB_DDL_AUTO: "update"
+  DB_DDL_AUTO: "validate"
   DB_SHOW_SQL: "false"
   DB_JDBC_BATCH_SIZE: "1000"
 
