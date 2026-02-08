@@ -61,6 +61,17 @@ spec:
               number: {{ .Values.routes.websocket.service.port }}
       {{- end }}
       
+      {{- if .Values.routes.simulation.enabled }}
+      # API Gateway: Simulation endpoints (/simulation/*)
+      - path: {{ .Values.routes.simulation.path }}
+        pathType: {{ .Values.routes.simulation.pathType }}
+        backend:
+          service:
+            name: {{ .Values.routes.simulation.service.name }}
+            port:
+              number: {{ .Values.routes.simulation.service.port }}
+      {{- end }}
+      
       {{- if .Values.routes.frontend.enabled }}
       # Frontend: Angular SPA (catch-all - MUST be last)
       # Handles all routes not matched above (/, /portfolio, /dashboard, etc.)

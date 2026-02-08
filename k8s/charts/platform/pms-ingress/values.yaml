@@ -130,6 +130,19 @@ routes:
       alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
       alb.ingress.kubernetes.io/success-codes: "200-299"
 
+  # API Gateway: Simulation service endpoints
+  # Route /simulation/** to API Gateway
+  simulation:
+    enabled: true
+    path: /simulation
+    pathType: Prefix
+    service:
+      name: apigateway
+      port: 8088
+    annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+      alb.ingress.kubernetes.io/success-codes: "200-299"
+
 # Environment-specific overrides
 # Override these in values-dev.yaml, values-prod.yaml, etc.
 environment: development

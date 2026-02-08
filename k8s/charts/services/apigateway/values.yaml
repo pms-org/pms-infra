@@ -14,7 +14,7 @@ service:
 deployment:
   replicas: 1
   image:
-    repository: niishantdev/pms-apigateway
+    repository: nehanawork1/pms-apigateway
     tag: latest
     pullPolicy: Always
 
