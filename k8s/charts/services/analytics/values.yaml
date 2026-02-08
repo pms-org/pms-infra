@@ -96,7 +96,7 @@ config:
   # Database configuration
   # DB_DDL_AUTO: "update"
   DB_SHOW_SQL: "false"
-  DB_JDBC_BATCH_SIZE: "50"
+  DB_JDBC_BATCH_SIZE: "1000"
 
   # Service-specific config
   # Redis Sentinel configuration
@@ -120,9 +120,9 @@ config:
   ANALYTICS_KAFKA_SEND_TIMEOUT_MS: "60000"
   ANALYTICS_KAFKA_CONSUMER_ID: "analytics-consumer"
 
-  # Buffer configuration
-  ANALYTICS_BUFFER_SIZE: "1000"
-  ANALYTICS_FLUSH_INTERVAL_MS: "5000"
+  # Buffer configuration - OPTIMIZED for high throughput
+  ANALYTICS_BUFFER_SIZE: "5000"
+  ANALYTICS_FLUSH_INTERVAL_MS: "500"
 
   # Finnhub API configuration
   FINNHUB_API_BASE_URL: "https://finnhub.io/api/v1"

@@ -82,7 +82,8 @@ config:
 
   # Database JPA configuration
   # DB_DDL_AUTO: "update"
-  DB_SHOW_SQL: "true"
+  DB_SHOW_SQL: "false"
+  DB_JDBC_BATCH_SIZE: "1000"
 
   # Kafka configuration
   KAFKA_BOOTSTRAP: "kafka:9092"
@@ -95,12 +96,12 @@ config:
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_LEVEL_COM_PMS_RTTM: "DEBUG"
 
-  # RTTM batching and queue settings
-  RTTM_BATCH_SIZE: "100"
-  RTTM_BATCH_POLL_MS: "2000"
+  # RTTM batching and queue settings - OPTIMIZED to match transactional/analytics
+  RTTM_BATCH_SIZE: "1000"
+  RTTM_BATCH_POLL_MS: "500"
   RTTM_QUEUE_CAPACITY: "10000"
   RTTM_CONSUMER_CONCURRENCY: "3"
-  RTTM_FETCH_MAX_WAIT_MS: "3000"
+  RTTM_FETCH_MAX_WAIT_MS: "1000"
 
   # Kafka topic configurations
   KAFKA_TOPIC_DLQ_EVENTS: "rttm.dlq.events"
@@ -109,36 +110,37 @@ config:
   KAFKA_TOPIC_TRADE_EVENTS: "rttm.trade.events"
   KAFKA_TOPIC_INVALID_TRADES: "invalid-trades-topic"
 
-  # RTTM queue metrics retention and aggregation
-  RTTM_QUEUE_METRICS_RETENTION_HOURS: "48"
+  # RTTM queue metrics retention and aggregation - ENHANCED (7 days retention)
+  RTTM_QUEUE_METRICS_RETENTION_HOURS: "168"
   RTTM_QUEUE_METRICS_CLEANUP_CRON: "0 0 2 * * ?"
-  RTTM_QUEUE_METRICS_AGG_THRESHOLD: "0.1"
-  RTTM_QUEUE_METRICS_MIN_INTERVAL: "5"
+  RTTM_QUEUE_METRICS_AGG_THRESHOLD: "0.15"
+  RTTM_QUEUE_METRICS_MIN_INTERVAL: "10"
   RTTM_QUEUE_METRICS_CACHE_TTL_HOURS: "24"
+  RTTM_QUEUE_METRICS_CACHE_CLEANUP_MS: "3600000"
 
   # RTTM alert generation thresholds
   RTTM_ALERT_EVAL_INTERVAL: "60000"
   RTTM_ALERT_AUTO_RESOLVE_INTERVAL: "300000"
 
-  # Latency thresholds (milliseconds)
-  RTTM_ALERT_LATENCY_WARNING: "50"
-  RTTM_ALERT_LATENCY_CRITICAL: "200"
+  # Latency thresholds (milliseconds) - REALISTIC thresholds for high-throughput
+  RTTM_ALERT_LATENCY_WARNING: "1000"
+  RTTM_ALERT_LATENCY_CRITICAL: "3000"
 
-  # Error rate thresholds (count in 5 minutes)
-  RTTM_ALERT_ERROR_RATE_WARNING: "1"
-  RTTM_ALERT_ERROR_RATE_CRITICAL: "2"
+  # Error rate thresholds (count in 5 minutes) - PRODUCTION-ready thresholds
+  RTTM_ALERT_ERROR_RATE_WARNING: "5"
+  RTTM_ALERT_ERROR_RATE_CRITICAL: "20"
 
-  # DLQ count thresholds (count in 5 minutes)
-  RTTM_ALERT_DLQ_WARNING: "1"
-  RTTM_ALERT_DLQ_CRITICAL: "2"
+  # DLQ count thresholds (count in 5 minutes) - PRODUCTION-ready thresholds
+  RTTM_ALERT_DLQ_WARNING: "10"
+  RTTM_ALERT_DLQ_CRITICAL: "50"
 
-  # Queue depth thresholds
-  RTTM_ALERT_QUEUE_DEPTH_WARNING: "10"
-  RTTM_ALERT_QUEUE_DEPTH_CRITICAL: "50"
+  # Queue depth thresholds - ALIGNED with queue capacity
+  RTTM_ALERT_QUEUE_DEPTH_WARNING: "1000"
+  RTTM_ALERT_QUEUE_DEPTH_CRITICAL: "5000"
 
-  # TPS (transactions per second) thresholds
-  RTTM_ALERT_TPS_WARNING: "10"
-  RTTM_ALERT_TPS_CRITICAL: "50"
+  # TPS (transactions per second) thresholds - HIGH-PERFORMANCE thresholds
+  RTTM_ALERT_TPS_WARNING: "10000"
+  RTTM_ALERT_TPS_CRITICAL: "15000"
 
   # Redis configuration
   REDIS_TIMEOUT: "2000"
